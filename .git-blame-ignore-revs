@@ -1,0 +1,3 @@
+# Commits that only reformat; `git blame` skips them when blame.ignoreRevsFile points here.
+# Line endings to LF
+b1df1a5c7fa8635893f6858acf9680fedbd3ad25

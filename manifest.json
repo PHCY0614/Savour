@@ -1,0 +1,61 @@
+{
+  "manifest_version": 3,
+  "default_locale": "en",
+  "name": "__MSG_extName__",
+  "version": "0.5.0",
+  "description": "__MSG_extDescription__",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": [
+    "activeTab",
+    "alarms",
+    "contextMenus",
+    "scripting",
+    "storage",
+    "unlimitedStorage"
+  ],
+  "host_permissions": [
+    "https://paste.plurk.com/*",
+    "https://api.notion.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://paste.plurk.com/show/*"
+      ],
+      "js": [
+        "lib/shared.js",
+        "content/plurk-paste.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "__MSG_actionTitle__",
+    "default_popup": "pages/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "options_page": "pages/options/options.html",
+  "commands": {
+    "save-selection": {
+      "description": "__MSG_cmdSaveSelection__"
+    },
+    "capture-post": {
+      "suggested_key": {
+        "default": "Alt+S"
+      },
+      "description": "__MSG_cmdCapturePage__"
+    }
+  },
+  "minimum_chrome_version": "102"
+}

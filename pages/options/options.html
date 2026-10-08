@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Savour 設定</title>
+    <link rel="stylesheet" href="../tokens.css">
+    <link rel="stylesheet" href="options.css">
+  </head>
+  <body>
+    <main class="page-shell">
+      <header>
+        <div class="language-toggle" role="group" aria-label="介面語言">
+          <button type="button" data-language="zh" aria-pressed="false">中</button>
+          <button type="button" data-language="en" aria-pressed="false">EN</button>
+        </div>
+        <h1>Savour</h1>
+        <p class="intro">先存再說、之後要讀卻找不到？按一下存進自己的 Notion，有空再慢慢消化資訊。</p>
+      </header>
+
+      <section class="guide-card">
+        <h2>開始前只需要做一次</h2>
+        <ol>
+          <li>在 Notion Developer Portal 建立 Internal Integration，開啟讀取內容、插入內容與更新內容權限。</li>
+          <li>若要使用既有資料庫，將該資料庫透過 Add connections 授權給 Integration，之後就能直接從清單選擇。</li>
+          <li>若要讓工具自動建立整理庫，建立一個空白頁面，將該頁透過 Add connections 授權給 Integration，再複製這個頁面的網址。</li>
+          <li>兩種整理庫方式擇一即可。既有資料庫即使目前是空的，工具也會在使用時自動補齊必要欄位。</li>
+        </ol>
+        <a href="https://www.notion.so/profile/integrations" target="_blank" rel="noreferrer">開啟 Notion Integrations</a>
+      </section>
+
+      <form id="settings-form">
+        <section class="form-card">
+          <div class="section-title">
+            <span>01</span>
+            <div>
+              <h2>Notion 連線</h2>
+              <p>先設定 Integration Token，這一步不需要整理庫網址。</p>
+            </div>
+          </div>
+
+          <label>
+            <span>Notion Integration Token</span>
+            <input id="token" name="token" type="password" autocomplete="off" placeholder="已設定時可留空">
+            <small id="token-state">尚未設定</small>
+          </label>
+
+          <label class="check-row">
+            <input id="remember-token" name="rememberToken" type="checkbox">
+            <span>在這台電腦記住 Token</span>
+          </label>
+          <p class="security-note">未勾選時，Token 會在 Chrome 完全關閉後清除。勾選後使用較方便，但 Chrome 本機儲存並非加密保管庫。</p>
+
+          <div class="button-row">
+            <button type="button" class="secondary" id="test-notion-auth">測試 Notion 授權</button>
+            <button type="submit" class="secondary">儲存設定</button>
+          </div>
+        </section>
+
+        <section class="form-card">
+          <div class="section-title">
+            <span>02</span>
+            <div>
+              <h2>Notion 整理庫</h2>
+              <p>從清單選擇要保存到哪個資料庫，之後隨時可以回來更換。也可以從空白頁面建立新的整理庫。</p>
+            </div>
+          </div>
+
+          <h3 class="subsection first">選擇整理庫</h3>
+          <div class="button-row picker-actions">
+            <button type="button" class="secondary" id="load-data-sources">載入可用資料庫</button>
+          </div>
+          <p class="picker-status" id="data-source-status" role="status" aria-live="polite"></p>
+          <label id="data-source-picker" hidden>
+            <span>要保存到的 Notion 資料庫</span>
+            <select id="data-source-select">
+              <option value="">請選擇資料庫</option>
+            </select>
+            <small>沒看到你的資料庫？到 Notion 打開該資料庫，在右上角「⋯」→「Connections」加入這個 Integration，再按「重新整理清單」。</small>
+          </label>
+          <p class="switch-warning" id="data-source-switch-warning" hidden>換到另一個資料庫後，工具會清掉本機的「已保存」紀錄與失敗項目，並改讀新資料庫的內容。Notion 裡的文章不會被刪除。</p>
+
+          <details class="manual-target">
+            <summary>進階：手動貼上資料庫網址</summary>
+            <label>
+              <span>Notion 資料庫網址</span>
+              <input id="archive-target" name="archiveTarget" type="text" placeholder="https://app.notion.com/p/...">
+              <small>清單裡找不到時才需要。資料庫缺少必要欄位時，工具會自動補齊。</small>
+            </label>
+          </details>
+
+          <div class="button-row">
+            <button type="button" class="primary" id="connect-archive">使用這個整理庫</button>
+          </div>
+
+          <h3 class="subsection">建立新的整理庫</h3>
+          <label>
+            <span>已授權的空白頁面網址</span>
+            <input id="parent-page-url" name="parentPageUrl" type="url" placeholder="https://app.notion.com/...">
+            <small>只有要讓工具自動建立新的整理庫時才需要。</small>
+          </label>
+
+          <label>
+            <span>整理庫名稱</span>
+            <input id="archive-name" name="archiveName" type="text" value="留己看">
+          </label>
+
+          <div class="button-row">
+            <button type="button" class="secondary" id="create-archive">建立 Notion 整理庫</button>
+          </div>
+        </section>
+      </form>
+
+      <section class="result-card" id="result-card" hidden>
+        <h2 id="result-title">設定完成</h2>
+        <p id="result-message"></p>
+        <a id="archive-link" href="#" target="_blank" rel="noreferrer" hidden>開啟整理庫</a>
+      </section>
+    </main>
+    <script src="../../i18n/en.js"></script>
+    <script src="../../i18n/index.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>

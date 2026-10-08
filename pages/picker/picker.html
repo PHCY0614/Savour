@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>加到哪個 Notion 頁面？</title>
+    <link rel="stylesheet" href="../tokens.css">
+    <link rel="stylesheet" href="picker.css">
+  </head>
+  <body>
+    <main class="panel" role="dialog" aria-labelledby="picker-heading">
+      <header class="header">
+        <h1 class="heading" id="picker-heading">加到哪個 Notion 頁面？</h1>
+        <button type="button" class="close" id="picker-close" aria-label="關閉">×</button>
+      </header>
+      <p class="preview" id="picker-preview"></p>
+      <input class="search" id="picker-search" type="search" placeholder="搜尋整理庫的頁面標題" aria-label="搜尋整理庫的頁面標題">
+      <p class="status" id="picker-status" aria-live="polite"></p>
+      <ul class="list" id="picker-list" role="listbox" aria-label="Notion 頁面"></ul>
+    </main>
+    <script src="../../i18n/en.js"></script>
+    <script src="../../i18n/index.js"></script>
+    <script src="picker.js"></script>
+  </body>
+</html>

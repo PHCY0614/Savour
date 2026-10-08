@@ -1,0 +1,40 @@
+/* Shared by popup, settings and the page picker so they read as one product. Light only. */
+:root {
+  color-scheme: light;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+  --font-serif: Georgia, "Noto Serif TC", serif;
+
+  --bg: #f4f0e8;
+  --surface: #fffdf9;
+  --field: #fffdfa;
+  --ink: #26221d;
+  --ink-soft: #4d4338;
+  --muted: #62584d;      /* 6:1 on --bg */
+  --accent: #74593a;     /* 5.8:1 on --bg */
+  --accent-ink: #5f4426;
+  --brand: #3a332c;
+  --line: #d9d0c4;
+  --line-soft: rgba(84, 73, 59, 0.14);
+  --hover: #efe8dc;
+
+  --ok: #3f6247;
+  --error: #9d2f2f;
+  --error-bg: #fbeceb;
+  --warn-bg: #fff7df;
+  --warn-line: #dfc89c;
+  --focus: #8b663d;
+
+  --radius-sm: 9px;
+  --radius: 12px;
+  --radius-lg: 18px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+::selection {
+  color: #fff;
+  background: var(--accent);
+}

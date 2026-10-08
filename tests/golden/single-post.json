@@ -1,0 +1,35 @@
+{
+  "captureType": "post",
+  "text": "這是一篇沒有續文的測試貼文。",
+  "sourceUrl": "https://www.threads.com/@sample/post/root001",
+  "author": "sample",
+  "publishedAt": "2026-09-01T01:02:03.000Z",
+  "topicTag": "",
+  "threadPosition": "",
+  "reviewFlags": [],
+  "media": [
+    {
+      "type": "image",
+      "url": "https://cdn.example.test/media/photo-640.jpg?token=redacted",
+      "alt": "",
+      "width": 640,
+      "height": 480
+    }
+  ],
+  "quotedPosts": [],
+  "links": [],
+  "linkCards": [],
+  "continuations": [],
+  "authorReplies": [],
+  "longTextAttachments": [],
+  "titleHint": "單篇貼文 fixture",
+  "captureValidation": {
+    "version": 2,
+    "postId": "root001",
+    "containerPostIds": [
+      "root001"
+    ],
+    "excludedPostIds": [],
+    "validated": true
+  }
+}

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Savour</title>
+    <link rel="stylesheet" href="../tokens.css">
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main class="popup-shell">
+      <header class="popup-header">
+        <h1>Savour</h1>
+        <p class="connection" id="connection" role="status">
+          <span class="connection-dot" id="connection-dot" aria-hidden="true"></span>
+          <span id="connection-label">尚未設定</span>
+        </p>
+      </header>
+
+      <section class="setup-warning" id="setup-warning" hidden>
+        <strong>尚未完成 Notion 設定</strong>
+        <span>先建立獨立整理庫，已擷取內容才會開始同步。</span>
+        <button type="button" class="text-button" id="open-settings-warning" data-always-enabled>前往設定</button>
+      </section>
+
+      <section class="stats" aria-label="保存統計">
+        <div><small>已保存</small><span id="saved-count">0</span></div>
+        <div><small>等待中</small><span id="pending-count">0</span></div>
+        <div class="stat-failed">
+          <small>失敗</small><span id="failed-count">0</span>
+          <button type="button" class="text-button" id="retry-failed" hidden>重試</button>
+        </div>
+      </section>
+
+      <section class="actions" aria-label="擷取操作">
+        <button type="button" class="primary" id="capture-thread">
+          <span>保存目前頁面</span>
+          <small>新聞、部落格等網頁文章，或 Threads、噗浪、X、Instagram 貼文</small>
+        </button>
+        <div class="update-panel" id="update-panel" hidden>
+          <button type="button" id="update-page">
+            <span>更新 Notion 頁面</span>
+            <small id="update-page-hint">用目前頁面的內容換掉 Notion 裡的原文；你寫的筆記會保留</small>
+          </button>
+          <a class="update-link" id="saved-page-link" href="#" target="_blank" rel="noreferrer" hidden>開啟已保存的 Notion 頁面</a>
+        </div>
+        <div class="selection-row">
+          <span class="selection-label">保存目前選取文字</span>
+          <div class="selection-actions">
+            <button type="button" id="save-selection">存成新頁面</button>
+            <button type="button" id="append-selection">加入現有頁面</button>
+          </div>
+        </div>
+      </section>
+
+      <p class="message" id="message" role="status" aria-live="polite"></p>
+
+      <section class="incomplete-section" id="incomplete-section" hidden>
+        <div class="section-heading">
+          <h2>待補完串文</h2>
+          <span class="incomplete-count" id="incomplete-count">0 篇</span>
+        </div>
+        <p class="incomplete-help">開啟貼文後按「保存目前文章」，工具會把缺少的段落接在原本 Notion 頁面的最後面；原本的內容和你的筆記都不會被更動。</p>
+        <button type="button" id="open-next-incomplete">開啟下一篇待補完</button>
+        <ol class="incomplete-list" id="incomplete-list"></ol>
+      </section>
+
+      <section class="recent-section">
+        <div class="section-heading">
+          <h2>最近紀錄</h2>
+          <div class="more-menu" id="more-menu">
+            <button type="button" class="more-toggle" id="more-toggle" aria-haspopup="true" aria-expanded="false" aria-label="更多操作" title="更多操作">
+              <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><circle cx="3" cy="8" r="1.4"/><circle cx="8" cy="8" r="1.4"/><circle cx="13" cy="8" r="1.4"/></svg>
+            </button>
+            <div class="more-list" id="more-list" role="menu" hidden>
+              <button type="button" role="menuitem" id="sync-notion">同步 Notion</button>
+              <button type="button" role="menuitem" id="export-audit">匯出清單</button>
+              <button type="button" role="menuitem" id="clear-recent">清除紀錄</button>
+            </div>
+          </div>
+        </div>
+        <p class="sync-state" id="sync-state"></p>
+        <ol class="recent-list" id="recent-list"></ol>
+        <p class="empty-state" id="recent-empty">尚未保存文章</p>
+      </section>
+
+      <footer>
+        <button type="button" class="text-button" id="open-archive" data-always-enabled>開啟整理庫</button>
+        <button type="button" class="text-button" id="open-settings" data-always-enabled>設定</button>
+      </footer>
+    </main>
+    <script src="../../i18n/en.js"></script>
+    <script src="../../i18n/index.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

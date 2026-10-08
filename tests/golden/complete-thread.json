@@ -1,0 +1,17 @@
+[
+  {
+    "text": "完整串文第一段。",
+    "sourceUrl": "https://www.threads.com/@sample/post/thread001",
+    "threadPosition": "1/3"
+  },
+  {
+    "text": "完整串文第二段。",
+    "sourceUrl": "https://www.threads.com/@sample/post/thread002",
+    "threadPosition": "2/3"
+  },
+  {
+    "text": "完整串文第三段。",
+    "sourceUrl": "https://www.threads.com/@sample/post/thread003",
+    "threadPosition": "3/3"
+  }
+]

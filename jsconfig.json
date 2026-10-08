@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "commonjs",
+    "checkJs": true,
+    "strict": true,
+    // Everything this code throws is an Error (see the Error fields in globals.d.ts), and catch
+    // blocks read error.message directly.
+    "useUnknownInCatchVariables": false,
+    "skipLibCheck": true,
+    "maxNodeModuleJsDepth": 0,
+    "noEmit": true,
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["chrome", "node"]
+  },
+  "include": ["*.js", "background/**/*.js", "content/**/*.js", "i18n/**/*.js", "lib/**/*.js", "model/**/*.js", "notion/**/*.js", "pages/**/*.js", "queue/**/*.js", "storage/**/*.js", "types.d.ts", "globals.d.ts"],
+  "exclude": ["node_modules", "vendor", "tests"]
+}

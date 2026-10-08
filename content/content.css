@@ -1,0 +1,26 @@
+.savour-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 30px;
+  z-index: 2147483647;
+  max-width: min(520px, calc(100vw - 32px));
+  padding: 11px 16px;
+  border-radius: 999px;
+  color: #fff;
+  background: #24211d;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translate(-50%, 10px);
+  transition: opacity 180ms ease, transform 180ms ease;
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  pointer-events: none;
+}
+
+.savour-toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.savour-toast.is-error {
+  background: #9d2f2f;
+}

@@ -1,0 +1,32 @@
+# 開發用套件（npm install 產生）
+node_modules/
+
+# 測試與覆蓋率產出
+coverage/
+.nyc_output/
+
+# 發布打包產出
+*.zip
+dist/
+release/
+build/
+
+# 機密資料。Notion Token 等一律不得進入版控
+.env
+.env.*
+*.pem
+*.p12
+secrets.json
+credentials.json
+
+# 執行記錄
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# 作業系統與編輯器暫存
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~

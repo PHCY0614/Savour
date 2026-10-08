@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head><title>Classic on X: "Main post text" / X</title></head>
+<body>
+<main>
+  <div aria-label="Timeline: Conversation">
+    <!-- Classic X layout with data-testid attributes; the focal post shows its time at the bottom. -->
+    <article data-testid="tweet" tabindex="-1">
+      <div data-testid="User-Name"><a href="/Classic"><span>Classic</span></a><a href="/Classic"><span>@Classic</span></a></div>
+      <div data-testid="tweetText" lang="en" dir="auto"><span>Main post text with a link </span><a href="https://t.co/abc" dir="ltr"><span aria-hidden="true">https://</span>example.com/a/very/long/pa<span aria-hidden="true">th/that/continues</span><span aria-hidden="true">…</span></a></div>
+      <div role="link" tabindex="0">
+        <div data-testid="User-Name"><span>Quoted</span><span>@Quoted</span></div>
+        <div data-testid="tweetText" lang="en" dir="auto"><span>Quoted post text must not be saved</span></div>
+        <a href="/Quoted/status/1800000000000000002/photo/1"><div data-testid="tweetPhoto"><img alt="Image" src="https://pbs.twimg.com/media/QuotedPhoto?format=jpg&amp;name=small"></div></a>
+      </div>
+      <a href="/Classic/status/1800000000000000001/photo/1"><div data-testid="tweetPhoto"><img alt="Image" src="https://pbs.twimg.com/media/MainPhoto.jpg?name=small"></div></a>
+      <div><a href="/Classic/status/1800000000000000001"><time datetime="2024-07-10T08:00:00.000Z">8:00 AM · Jul 10, 2024</time></a></div>
+    </article>
+    <article data-testid="tweet">
+      <div data-testid="User-Name"><a href="/Classic"><span>@Classic</span></a><a href="/Classic/status/1800000000000000005"><time datetime="2024-07-10T08:05:00.000Z">Jul 10</time></a></div>
+      <div data-testid="tweetText" lang="en" dir="auto"><span>Second part of the thread</span></div>
+      <div data-testid="tweet-text-show-more-link">Show more</div>
+    </article>
+  </div>
+</main>
+</body>
+</html>

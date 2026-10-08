@@ -1,0 +1,7 @@
+{
+  "extName": { "message": "Savour" },
+  "extDescription": { "message": "先存再說、之後要讀卻找不到？按一下存進自己的 Notion，有空再慢慢消化資訊。" },
+  "actionTitle": { "message": "Savour：保存到 Notion" },
+  "cmdSaveSelection": { "message": "保存選取的文字（可選擇存成新頁面或加到既有頁面）" },
+  "cmdCapturePage": { "message": "保存目前的頁面或貼文" }
+}

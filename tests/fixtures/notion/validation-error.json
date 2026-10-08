@@ -1,0 +1,7 @@
+{
+  "object": "error",
+  "status": 400,
+  "code": "validation_error",
+  "message": "fixture validation error",
+  "request_id": "00000000-0000-0000-0000-000000000000"
+}

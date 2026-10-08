@@ -1,0 +1,137 @@
+/* Colors and focus come from tokens.css; local names below just alias them. */
+:root {
+  --text: var(--ink);
+  --group: var(--muted);
+  --active: var(--hover);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  min-width: 360px;
+  margin: 0;
+  color: var(--text);
+  background: var(--bg);
+  font: 13px/1.45 var(--font-sans);
+}
+
+/* The toolbar popup sizes itself to the page; a separate window fills the window. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 420px;
+  padding: 14px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.heading {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.close {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 0;
+  color: inherit;
+  background: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.preview {
+  margin: 0;
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search {
+  min-height: 34px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: inherit;
+  background: var(--field);
+  font: inherit;
+}
+
+.status {
+  margin: 0;
+  color: var(--muted);
+}
+
+.status:empty {
+  display: none;
+}
+
+.status.is-error {
+  color: var(--error);
+}
+
+.list {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.group {
+  padding: 6px 10px 2px;
+  color: var(--group);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.option {
+  display: block;
+  width: 100%;
+  min-height: 34px;
+  padding: 8px 10px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 8px;
+  color: inherit;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.option.is-active {
+  background: var(--active);
+}
+
+.option:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.option:hover {
+  background: var(--active);
+}
+
+.close:hover {
+  background: var(--active);
+}

@@ -1,0 +1,17 @@
+{
+  "extName": {
+    "message": "Savour"
+  },
+  "extDescription": {
+    "message": "Save now. Savour later. One click saves it to your own Notion, to digest when you have time."
+  },
+  "actionTitle": {
+    "message": "Savour: save to Notion"
+  },
+  "cmdSaveSelection": {
+    "message": "Save the selected text (as a new page or added to an existing one)"
+  },
+  "cmdCapturePage": {
+    "message": "Save the current page or post"
+  }
+}

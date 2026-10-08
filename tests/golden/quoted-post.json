@@ -1,0 +1,13 @@
+{
+  "text": "主貼文只應保留這段文字。",
+  "sourceUrl": "https://www.threads.com/@sample/post/quote001",
+  "media": [],
+  "quotedPosts": [
+    {
+      "postId": "embedded001",
+      "sourceUrl": "https://www.threads.com/@other/post/embedded001"
+    }
+  ],
+  "containerPostIds": ["quote001", "embedded001"],
+  "excludedPostIds": ["embedded001"]
+}
