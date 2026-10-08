@@ -90,4 +90,4 @@ Last updated: 2026-10-08
 
 ## Contact
 
-For any privacy question, email <!-- TODO: developer contact email --> or use the developer contact on the Chrome Web Store listing.
+For any privacy question, email phcy0614@gmail.com or use the developer contact on the Chrome Web Store listing.
