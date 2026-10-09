@@ -161,6 +161,10 @@ test("排除 Threads 介面文字但保留真正正文", () => {
     "無地點資料",
     "2026-7-9",
     "/",
+    "全部",
+    "All",
+    "尚無回覆",
+    "No replies yet",
     "Threads 主題：高敏人"
   ]) {
     assert.equal(S.isThreadsUiText(value, "example"), true, `${value} 應視為介面文字`);
@@ -171,6 +175,9 @@ test("排除 Threads 介面文字但保留真正正文", () => {
   );
   assert.equal(S.isThreadsUiText("作者在這裡補充正文", "example"), false);
   assert.equal(S.isThreadsUiText("這篇文章已釘選在首頁", "example"), false);
+  // Only a line that is exactly the label counts; the words inside a post stay.
+  assert.equal(S.isThreadsUiText("全部都是我的錯", "example"), false);
+  assert.equal(S.isThreadsUiText("尚無回覆的貼文很孤單", "example"), false);
 });
 
 test("清除串文殘留符號與重複的 Threads 主題", () => {
