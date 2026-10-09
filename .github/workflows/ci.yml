@@ -1,0 +1,26 @@
+# Runs the same checks as a local `npm run lint / typecheck / test / check` on every push to main and every PR,
+# so a refactor that changes behaviour shows up before it is merged. It does not build or publish the package.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run check
