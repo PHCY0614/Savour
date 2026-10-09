@@ -62,6 +62,21 @@
     };
   }
 
+  // Embedded video addresses (watch pages), each with where it sat in the text (a character offset, or -1 when unknown).
+  function sanitizeVideos(/** @type {any} */ raw) {
+    const videos = /** @type {string[]} */ ([]);
+    const videoOffsets = /** @type {number[]} */ ([]);
+    const urls = Array.isArray(raw?.videos) ? raw.videos : [];
+    urls.forEach((/** @type {any} */ value, /** @type {number} */ index) => {
+      const url = S.embeddedVideoWatchUrl(value);
+      if (!url || videos.includes(url) || videos.length >= 5) return;
+      const offset = Number(raw?.videoOffsets?.[index]);
+      videos.push(url);
+      videoOffsets.push(Number.isInteger(offset) && offset >= 0 ? offset : -1);
+    });
+    return { videos, videoOffsets };
+  }
+
   function sanitizeMedia(/** @type {any} */ items) {
     const seen = new Set();
     return (items ?? []).map((/** @type {any} */ item) => ({
@@ -154,7 +169,7 @@
       links: S.normalizeLinks(raw?.links),
       linkCards: S.normalizeLinks(raw?.linkCards, 10),
       // Embedded YouTube / Vimeo players, as watch-page addresses; Notion plays them.
-      videos: [...new Set((Array.isArray(raw?.videos) ? raw.videos : []).map((/** @type {any} */ value) => S.embeddedVideoWatchUrl(value)).filter(Boolean))].slice(0, 5),
+      ...sanitizeVideos(raw),
       quotedPosts,
       quotes: quotedPosts.map((/** @type {any} */ item) => ({
         mediaId: item.mediaId,

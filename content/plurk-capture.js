@@ -45,7 +45,8 @@
 
     // Plain text of a text_holder: <br> become line breaks; emoticons, uploaded-image thumbnails
     // and link-preview cards are left out (they are saved as images / bookmarks instead).
-    function holderText(/** @type {Element} */ holder) {
+    // `videoMarks`, when given, receives { url, at } for each embedded video: the length of the cleaned text before it.
+    function holderText(/** @type {Element} */ holder, /** @type {any[] | null} */ videoMarks = null) {
       let text = "";
       const walk = (/** @type {Element} */ node) => {
         for (const child of node.childNodes) {
@@ -54,6 +55,11 @@
           } else if (child.nodeName === "BR") {
             text += "\n";
           } else if (child instanceof Element) {
+            if (videoMarks && child.matches("iframe[src]")) {
+              const url = S.embeddedVideoWatchUrl(child.getAttribute("src"));
+              if (url) videoMarks.push({ url, at: S.cleanText(text).length });
+              continue;
+            }
             if (child.matches("img") && isEmoticon(child)) continue;
             if (child.matches("a.pictureservices, a.meta")) continue;
             walk(child);
@@ -83,13 +89,6 @@
         .map(anchor => ({ url: anchor.href, thumbnail: anchor.querySelector("img")?.src ?? "" }))
         .filter(item => /^https:\/\//i.test(item.url) && !seen.has(item.url) && seen.add(item.url))
         .map(item => ({ type: "image", url: item.url, thumbnailUrl: item.thumbnail, alt: "", width: 0, height: 0 }));
-    }
-
-    // YouTube and Vimeo players the plurk page draws in place of a pasted video link.
-    function holderVideos(/** @type {Element} */ holder) {
-      return [...new Set([...holder.querySelectorAll("iframe[src]")]
-        .map(frame => S.embeddedVideoWatchUrl(frame.getAttribute("src")))
-        .filter(Boolean))];
     }
 
     function holderPasteLinks(/** @type {Element} */ holder) {
@@ -140,13 +139,17 @@
     async function buildEntry(/** @type {Element} */ holder, /** @type {any} */ base) {
       const links = holderLinks(holder);
       const { attachments, failures } = await pasteAttachments(holder);
+      // YouTube and Vimeo players the page draws in place of a pasted video link, with where they sit in the text.
+      const videoMarks = /** @type {any[]} */ ([]);
+      const text = holderText(holder, videoMarks);
       return {
         ...base,
-        text: holderText(holder),
+        text,
         links,
         linkCards: holderLinkCards(holder, links),
         media: holderMedia(holder),
-        videos: holderVideos(holder),
+        videos: videoMarks.map(mark => mark.url),
+        videoOffsets: videoMarks.map(mark => Math.min(mark.at, text.length)),
         longTextAttachments: attachments,
         reviewFlags: failures.length ? ["正文疑似遺漏"] : [],
         pasteFailures: failures

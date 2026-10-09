@@ -103,6 +103,35 @@
       }
     }
 
+    // The text with its videos put where they sat: text before, the video, text after. A video with no known
+    // place goes after the text, which is also where every video goes when the entry carries a Plurk Paste
+    // (the Paste's own split of the text then takes the place of this one).
+    function textWithVideos(/** @type {any} */ children, /** @type {any} */ entry) {
+      const text = String(entry.text ?? "");
+      const videos = entry.videos ?? [];
+      const placed = videos
+        .map((/** @type {string} */ url, /** @type {number} */ index) => ({ url, at: Number(entry.videoOffsets?.[index]) }))
+        .filter((/** @type {any} */ item) => Number.isInteger(item.at) && item.at >= 0)
+        .sort((/** @type {any} */ left, /** @type {any} */ right) => left.at - right.at);
+      const blocks = /** @type {any[]} */ ([]);
+      let from = 0;
+      for (const item of placed) {
+        const at = Math.min(item.at, text.length);
+        const part = text.slice(from, at).trim();
+        if (part) blocks.push(...paragraphBlocks(part, entry.links));
+        const video = videoBlock(item.url);
+        if (video) blocks.push(video);
+        from = Math.max(from, at);
+      }
+      const rest = text.slice(from).trim();
+      if (rest) blocks.push(...paragraphBlocks(rest, entry.links));
+      children.push(...blocks);
+      return {
+        placedUrls: new Set(placed.map((/** @type {any} */ item) => item.url)),
+        textBlocks: blocks.filter((/** @type {any} */ block) => block.type !== "video")
+      };
+    }
+
     function addLinkCards(/** @type {any} */ children, /** @type {any} */ linkCards) {
       for (const card of linkCards ?? []) {
         const url = shared.webLinkUrl(card?.url);
@@ -428,7 +457,7 @@
     }
 
     function buildPageChildren(/** @type {import("../types").Capture} */ capture) {
-      const children = [];
+      const children = /** @type {any[]} */ ([]);
 
       if (capture.articleBlocks?.length) {
         children.push(...articleChildren(capture));
@@ -436,14 +465,24 @@
         return children;
       }
       const mainStart = children.length;
-      const around = splitAroundPaste(capture.text, capture.longTextAttachments, capture.links);
-      const mainBlocks = paragraphBlocks(around.head, capture.links);
-      children.push(...mainBlocks);
-      addLongTextBlocks(children, capture.longTextAttachments, capture.links);
-      if (around.tail) children.push(...paragraphBlocks(around.tail, capture.links));
+      const hasPaste = (capture.longTextAttachments ?? []).some((/** @type {any} */ item) => item?.source === "plurk_paste");
+      let mainBlocks;
+      let placedVideos = new Set();
+      if (capture.videos?.length && !hasPaste) {
+        const result = textWithVideos(children, capture);
+        mainBlocks = result.textBlocks;
+        placedVideos = result.placedUrls;
+        addLongTextBlocks(children, capture.longTextAttachments, capture.links);
+      } else {
+        const around = splitAroundPaste(capture.text, capture.longTextAttachments, capture.links);
+        mainBlocks = paragraphBlocks(around.head, capture.links);
+        children.push(...mainBlocks);
+        addLongTextBlocks(children, capture.longTextAttachments, capture.links);
+        if (around.tail) children.push(...paragraphBlocks(around.tail, capture.links));
+      }
       appendThreadPosition(children, capture.threadPosition, mainStart);
       addMediaBlocks(children, capture.media);
-      addVideoBlocks(children, capture.videos);
+      addVideoBlocks(children, (capture.videos ?? []).filter((/** @type {string} */ url) => !placedVideos.has(url)));
       addLinkCards(children, capture.linkCards);
       addQuotedPostLinks(children, capture.quotedPosts);
       // A web page without a readable article keeps a preview card of the page itself.
@@ -471,14 +510,24 @@
         children.push(divider());
         children.push(blankParagraph());
         const continuationStart = children.length;
-        const around = splitAroundPaste(continuation.text, continuation.longTextAttachments, continuation.links);
-        const continuationBlocks = paragraphBlocks(around.head, continuation.links);
-        children.push(...continuationBlocks);
-        addLongTextBlocks(children, continuation.longTextAttachments, continuation.links);
-        if (around.tail) children.push(...paragraphBlocks(around.tail, continuation.links));
+        const hasPaste = (continuation.longTextAttachments ?? []).some((/** @type {any} */ item) => item?.source === "plurk_paste");
+        let continuationBlocks;
+        let placedVideos = new Set();
+        if (continuation.videos?.length && !hasPaste) {
+          const result = textWithVideos(children, continuation);
+          continuationBlocks = result.textBlocks;
+          placedVideos = result.placedUrls;
+          addLongTextBlocks(children, continuation.longTextAttachments, continuation.links);
+        } else {
+          const around = splitAroundPaste(continuation.text, continuation.longTextAttachments, continuation.links);
+          continuationBlocks = paragraphBlocks(around.head, continuation.links);
+          children.push(...continuationBlocks);
+          addLongTextBlocks(children, continuation.longTextAttachments, continuation.links);
+          if (around.tail) children.push(...paragraphBlocks(around.tail, continuation.links));
+        }
         appendThreadPosition(children, continuation.threadPosition, continuationStart);
         addMediaBlocks(children, continuation.media);
-        addVideoBlocks(children, continuation.videos);
+        addVideoBlocks(children, (continuation.videos ?? []).filter((/** @type {string} */ url) => !placedVideos.has(url)));
         addLinkCards(children, continuation.linkCards);
         addQuotedPostLinks(children, continuation.quotedPosts);
         if (!continuationBlocks.length && !continuation.longTextAttachments?.length && !continuation.media?.length && !continuation.videos?.length && !continuation.quotedPosts?.length && !continuation.linkCards?.length) {

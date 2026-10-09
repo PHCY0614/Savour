@@ -137,7 +137,8 @@ test("從噗浪頁面到 Notion 頁面：Paste 全文緊接在 Paste 連結下�
 });
 
 test("噗文裡嵌入的 YouTube / Vimeo 影片會以 Notion 影片區塊保存（YouTube 與其他影片網站的播放器都轉成觀看頁網址）", async () => {
-  const html = fixture("plurk-post").replace(
+  // This plurk has no Paste: with one, the Paste's own place in the text decides the order instead.
+  const html = fixture("plurk-post").replace(/<a href="https:\/\/paste\.plurk\.com[^>]*>[^<]*<\/a>/, "").replace(
     "<span class=\"hashtag\">",
     `<iframe class="ogrendered" width="500" height="320" src="https://www.youtube.com/embed/Sample12345?feature=oembed"></iframe><iframe src="https://player.vimeo.com/video/123456789"></iframe><iframe src="https://ads.example.test/frame"></iframe><span class="hashtag">`
   );
@@ -150,6 +151,11 @@ test("噗文裡嵌入的 YouTube / Vimeo 影片會以 Notion 影片區塊保存�
     assert.deepEqual(normalized.videos, result.videos);
     const videoUrls = N.buildPageChildren(normalized).filter(block => block.type === "video").map(block => block.video.external.url);
     assert.deepEqual(videoUrls, result.videos);
+    // The video stays where the page shows it: after the text, before the hashtags that follow it.
+    const kinds = N.buildPageChildren(normalized).map(block => (block.type === "video" ? "video" : (block[block.type]?.rich_text ?? []).map(/** @type {any} */ item => item.text.content).join("")));
+    const firstVideo = kinds.indexOf("video");
+    const tag = kinds.findIndex(line => line.includes("#測試"));
+    assert.ok(firstVideo > 0 && tag > firstVideo, `影片應在標籤之前：${JSON.stringify(kinds)}`);
   } finally {
     env.restore();
   }

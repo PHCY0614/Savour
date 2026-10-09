@@ -60,6 +60,8 @@ export interface CaptureEntry {
   linkCards: LinkRef[];
   /** Watch-page addresses of YouTube / Vimeo players embedded in the post, at most 5. */
   videos: string[];
+  /** Where each of `videos` sat in `text` (character offset), or -1 when unknown; same length as `videos`. */
+  videoOffsets: number[];
   quotedPosts: QuotedPost[];
   sourceType: SourceType;
   completeness: Completeness;
