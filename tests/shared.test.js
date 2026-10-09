@@ -161,6 +161,9 @@ test("排除 Threads 介面文字但保留真正正文", () => {
     "無地點資料",
     "2026-7-9",
     "/",
+    "還剩21小時",
+    "還剩 5 分鐘",
+    "21 hours left",
     "全部",
     "All",
     "尚無回覆",
@@ -512,4 +515,12 @@ test("含網站導覽列或頁尾的容器是整個頁面，不會被當成貼�
   const page = { ...base, hasTextEvidence: true, textEvidenceLength: 400, nodeCount: 900, containsPageChrome: true };
   assert.equal(S.choosePostCandidate([page, card], "MAIN"), card);
   assert.equal(S.choosePostCandidate([page], "MAIN"), null);
+});
+
+test("貼文裡貼的 Threads 短連結（/share/…）是連結，個人頁、主題與貼文網址仍不算外部連結", () => {
+  assert.equal(S.externalLinkUrl("https://www.threads.com/share/BAuVQ0a79-"), "https://www.threads.com/share/BAuVQ0a79-");
+  assert.equal(S.externalLinkUrl("https://www.threads.com/@someone"), "");
+  assert.equal(S.externalLinkUrl("https://www.threads.com/@someone/post/ABC123"), "");
+  assert.equal(S.externalLinkUrl("https://www.threads.com/search?q=x"), "");
+  assert.deepEqual(S.normalizeLinks([{ text: "threads.com/share…", url: "https://www.threads.com/share/BAuVQ0a79-" }]), [{ text: "threads.com/share…", url: "https://www.threads.com/share/BAuVQ0a79-" }]);
 });
