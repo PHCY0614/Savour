@@ -31,11 +31,13 @@ You can also save just a highlighted passage, or add it to an existing Notion pa
 
 Requires Chrome 102 or later and a Notion account.
 
-1. Download the latest `savour-v*.zip` from [Releases](https://github.com/PHCY0614/Savour/releases/latest) and extract it. Keep the folder somewhere it will not be deleted; if it is removed, the extension disappears too.
-2. Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the extracted folder that contains `manifest.json`.
+Savour is coming soon to the Chrome Web Store. To try it now, load it manually:
+
+1. Download or clone this repository and keep it somewhere it will not be deleted; if the folder is removed, the extension disappears too.
+2. Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the folder that contains `manifest.json`.
 3. Pin Savour to the Chrome toolbar for easy access.
 
-Once Savour is listed on the Chrome Web Store, you will be able to install it from there.
+A manually loaded copy does not update itself. To update, download the new version and reload the extension.
 
 ## First-time setup
 

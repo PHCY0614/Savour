@@ -31,11 +31,13 @@
 
 需要 Chrome 102 以上版本與 Notion 帳號。
 
-1. 到 [Releases](https://github.com/PHCY0614/Savour/releases/latest) 下載最新的 `savour-v*.zip` 並解壓縮。請放在不會被刪除的位置，資料夾被刪除後擴充功能也會消失。
-2. 開啟 `chrome://extensions`，啟用「開發人員模式」，按「載入未封裝項目」，選擇解壓縮後含有 `manifest.json` 的資料夾。
+Savour 即將上架 Chrome 線上應用程式商店。想先試用的話，可以手動載入：
+
+1. 下載或 clone 這個 repo，放在不會被刪除的位置，資料夾被刪除後擴充功能也會消失。
+2. 開啟 `chrome://extensions`，啟用「開發人員模式」，按「載入未封裝項目」，選擇含有 `manifest.json` 的資料夾。
 3. 建議將 Savour 釘選在 Chrome 工具列，方便隨時保存。
 
-上架 Chrome 線上應用程式商店後，會改為從商店安裝。
+手動載入的版本不會自動更新，更新時請重新下載並重新載入。
 
 ## 第一次設定
 
