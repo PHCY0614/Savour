@@ -133,7 +133,7 @@ createArchiveButton.addEventListener("click", () => {
     const config = await sendBackground({ type: "CREATE_ARCHIVE" });
     archiveTarget.value = config.archiveTarget || config.databaseUrl || config.dataSourceId || "";
     currentDataSourceId = compactNotionId(config.dataSourceId);
-    showResult(t("整理庫已建立"), t("現在可以回到 Threads，開始保存貼文。"), false, config.databaseUrl);
+    showResult(t("整理庫已建立"), t("現在可以回到網頁，開始保存。"), false, config.databaseUrl);
     await loadDataSources({ quiet: true });
   });
 });
@@ -162,7 +162,7 @@ async function loadSettings() {
     tokenState.textContent = config.hasToken
       ? config.rememberToken ? t("Token 已保存在這台電腦") : t("Token 只在目前 Chrome 工作階段有效")
       : t("尚未設定");
-    if (config.databaseUrl) showResult(t("整理庫已連接"), t("可以回到 Threads 開始保存。"), false, config.databaseUrl);
+    if (config.databaseUrl) showResult(t("整理庫已連接"), t("可以回到網頁開始保存。"), false, config.databaseUrl);
     if (config.hasToken) await loadDataSources({ quiet: true });
   } catch (error) {
     showResult(t("無法載入設定"), error.message, true);
