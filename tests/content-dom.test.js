@@ -308,3 +308,19 @@ test("按「更多」後貼文被重新繪製、空了一下子，仍等它有�
   assert.match(capture.text, /展開後的全文/);
   assert.doesNotMatch(capture.text, /首頁|使用條款|2026/);
 });
+
+test("頁面沒有串文資料時，緊接在主貼文後面的作者貼文算作者補充；讀者留言之後的作者回覆不算", async () => {
+  env.dom.reconfigure({ url: "https://www.threads.com/@sample/post/root001" });
+  const card = (/** @type {string} */ user, /** @type {string} */ id, /** @type {string} */ text) => `<div data-pressable-container="true">
+    <a href="/@${user}/post/${id}"><time datetime="2026-01-01T00:00:00.000Z">1 天</time></a><div dir="auto">${text}</div></div>`;
+  document.open();
+  document.write(`<!doctype html><html><body><div>
+    ${card("sample", "root001", "主貼文")}
+    ${card("sample", "supp001", "⚠️ 作者自己的補充")}
+    ${card("reader", "read001", "讀者留言")}
+    ${card("sample", "ansr001", "作者回覆讀者")}
+  </div></body></html>`);
+  document.close();
+  const capture = await content.captureCurrentThread(true);
+  assert.deepEqual(capture.authorReplies.map((/** @type {any} */ item) => item.text), ["⚠️ 作者自己的補充"]);
+});

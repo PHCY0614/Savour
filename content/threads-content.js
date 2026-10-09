@@ -205,11 +205,15 @@
     const numberedRecords = [];
     const authorReplyRecords = [];
     const seenPostIds = new Set([S.parseThreadsUrl(root.sourceUrl).postId].filter(Boolean));
+    // The author's own posts that follow the post with nobody else's in between. When the page carries no
+    // thread data to say who a reply answers, these are the author adding to their own post.
+    let authorRunOpen = true;
 
     for (const container of following.slice(0, 250)) {
       if (hasConversationBoundaryBetween(rootContainer, container)) break;
       const sourceUrl = findPostUrl(container);
       const parsed = S.parseThreadsUrl(sourceUrl);
+      if (parsed.handle && parsed.handle !== targetAuthor) authorRunOpen = false;
       if (!parsed.postId || seenPostIds.has(parsed.postId)) continue;
       const relationship = options.relationshipByPostId?.get(parsed.postId);
       const position = extractThreadPosition(container)
@@ -237,7 +241,9 @@
 
       if (position) continue;
       if (parsed.handle === targetAuthor) {
-        const isDirectAuthorReply = S.isDirectAuthorSupplement(relationship, targetAuthor);
+        const isDirectAuthorReply = relationship
+          ? S.isDirectAuthorSupplement(relationship, targetAuthor)
+          : authorRunOpen;
         if (!isDirectAuthorReply) continue;
         let item;
         try {
