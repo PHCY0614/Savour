@@ -19,6 +19,9 @@ const tokenState = /** @type {HTMLElement} */ (document.getElementById("token-st
 const rememberToken = /** @type {HTMLInputElement} */ (document.getElementById("remember-token"));
 const parentPageUrl = /** @type {HTMLInputElement} */ (document.getElementById("parent-page-url"));
 const archiveName = /** @type {HTMLInputElement} */ (document.getElementById("archive-name"));
+// The field shows the default name in the interface language. It is saved as the Chinese default, not as
+// the English text, or switching back to Chinese would keep showing "For Later Me".
+const DEFAULT_ARCHIVE_NAME = "留己看";
 const archiveTarget = /** @type {HTMLInputElement} */ (document.getElementById("archive-target"));
 const testNotionAuthButton = /** @type {HTMLButtonElement} */ (document.getElementById("test-notion-auth"));
 const connectArchiveButton = /** @type {HTMLButtonElement} */ (document.getElementById("connect-archive"));
@@ -156,7 +159,7 @@ async function loadSettings() {
     languagePreference = config.uiLanguage || "auto";
     renderLanguageToggle();
     parentPageUrl.value = config.parentPageUrl || "";
-    archiveName.value = t(config.archiveName || "留己看");
+    archiveName.value = t(isDefaultArchiveName(config.archiveName) ? DEFAULT_ARCHIVE_NAME : config.archiveName);
     archiveTarget.value = config.archiveTarget || config.databaseUrl || config.dataSourceId || "";
     currentDataSourceId = compactNotionId(config.dataSourceId);
     tokenState.textContent = config.hasToken
@@ -239,6 +242,12 @@ function renderDataSources(dataSources, limitReached) {
   updateSwitchWarning();
 }
 
+/** @param {unknown} name */
+function isDefaultArchiveName(name) {
+  const text = String(name ?? "").trim();
+  return !text || text === DEFAULT_ARCHIVE_NAME || text === I.english?.[DEFAULT_ARCHIVE_NAME];
+}
+
 // Only "使用這個整理庫" sends archiveTarget, so other buttons never switch the database by accident.
 async function saveSettings({ switchArchive = false } = {}) {
   const config = await sendBackground({
@@ -247,7 +256,7 @@ async function saveSettings({ switchArchive = false } = {}) {
       token: tokenInput.value.trim(),
       rememberToken: rememberToken.checked,
       parentPageUrl: parentPageUrl.value.trim(),
-      archiveName: archiveName.value.trim(),
+      archiveName: isDefaultArchiveName(archiveName.value) ? DEFAULT_ARCHIVE_NAME : archiveName.value.trim(),
       uiLanguage: languagePreference,
       ...(switchArchive ? { archiveTarget: archiveTarget.value.trim() } : {})
     }
