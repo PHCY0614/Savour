@@ -371,7 +371,9 @@
           token,
           retrySafe: false
         });
-        const written = (response.results ?? []).map((/** @type {any} */ block) => block?.id).filter(Boolean);
+        // Notion answers an insert in the middle of a page with the new blocks followed by the blocks
+        // already after them, so only the first chunk.length are the ones just written.
+        const written = (response.results ?? []).slice(0, chunk.length).map((/** @type {any} */ block) => block?.id).filter(Boolean);
         ids.push(...written);
         if (nextPosition) {
           // Without the new ids the next chunk would land above this one.

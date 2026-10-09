@@ -26,7 +26,8 @@ function blockText(block) {
 }
 
 // A Notion page held in memory, answering the requests notion/repository.js makes.
-function fakeNotion({ blocks, range = null, captureKey = "web:https://blog.example.com/post" }) {
+// echoFollowing: answer an insert like Notion does, with the new blocks and then every block after them.
+function fakeNotion({ blocks, range = null, captureKey = "web:https://blog.example.com/post", echoFollowing = false }) {
   const page = {
     id: PAGE_ID,
     url: "https://www.notion.so/page",
@@ -52,7 +53,7 @@ function fakeNotion({ blocks, range = null, captureKey = "web:https://blog.examp
       if (position?.type === "after_block") at = state.blocks.findIndex(block => block.id === position.after_block.id) + 1;
       assert.ok(at >= 0, "position must point at an existing block");
       state.blocks.splice(at, 0, ...written);
-      return { results: written };
+      return { results: echoFollowing ? state.blocks.slice(at) : written };
     }
     if (requestPath === `/v1/pages/${PAGE_ID}` && options.method === "PATCH") {
       for (const [name, value] of Object.entries(options.body.properties ?? {})) {
@@ -117,6 +118,31 @@ test("更新已保存的頁面：只換掉記錄的原文，原文上下的筆�
   const rangeWrite = notion.requests.indexOf(propertyPatch);
   const firstDelete = notion.requests.findIndex(request => request.method === "DELETE");
   assert.ok(rangeWrite < firstDelete);
+});
+
+test("連續更新兩次：Notion 回傳新區塊加上後面的舊區塊時，仍只記錄新版本，第二次也只換掉原文", async () => {
+  const noteAbove = textBlock("上面的筆記");
+  const original = [textBlock("第一版")];
+  const noteBelow = textBlock("下面的筆記");
+  const notion = fakeNotion({
+    blocks: [noteAbove, ...original, noteBelow],
+    range: [original[0].id, original[0].id],
+    echoFollowing: true
+  });
+
+  await notion.repository.saveCaptureToNotion(webCapture(["第二版"]), DATA_SOURCE, "token", { updateExisting: true });
+  assert.deepEqual(notion.range(), { first: notion.blocks[1].id, last: notion.blocks[1].id });
+
+  const result = await notion.repository.saveCaptureToNotion(webCapture(["第三版 A", "第三版 B"]), DATA_SOURCE, "token", { updateExisting: true });
+  assert.equal(result.keptPreviousVersion, false);
+  assert.deepEqual(notion.blocks.map(blockText), ["上面的筆記", "第三版 A", "第三版 B", "下面的筆記"]);
+});
+
+test("找不到原文範圍時，提醒放在新版本正下方、舊內容上方", async () => {
+  const notion = fakeNotion({ blocks: [textBlock("舊的原文"), textBlock("我的筆記")], echoFollowing: true });
+  await notion.repository.saveCaptureToNotion(webCapture(["新的原文"]), DATA_SOURCE, "token", { updateExisting: true });
+  assert.deepEqual(notion.blocks.map(block => block.type === "callout" ? "提醒" : blockText(block)).filter(Boolean), ["新的原文", "提醒", "舊的原文", "我的筆記"]);
+  assert.deepEqual(notion.range(), { first: notion.blocks[0].id, last: notion.blocks[0].id });
 });
 
 test("原文在頁面最上方時，新版本從頁面開頭寫入", async () => {
