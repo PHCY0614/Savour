@@ -119,7 +119,7 @@ connectArchiveButton.addEventListener("click", () => {
       const synced = await sendBackground({ type: "SYNC_NOTION_STATE" });
       syncMessage = t("已讀取這個資料庫既有的 {n} 篇文章。", { n: synced.synced });
     }
-    showResult(t("整理庫已連接"), t("工具可以讀取並寫入這個 Threads 整理庫，{schema}{sync}", { schema: schemaMessage, sync: syncMessage }), false, result.databaseUrl);
+    showResult(t("整理庫已連接"), t("工具可以讀取並寫入這個整理庫，{schema}{sync}", { schema: schemaMessage, sync: syncMessage }), false, result.databaseUrl);
     await loadDataSources({ quiet: true });
   });
 });

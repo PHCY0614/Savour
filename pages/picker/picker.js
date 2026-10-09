@@ -104,7 +104,7 @@
       try {
         const response = await sendMessage({ type: "PICKER_CHOOSE", token, target });
         if (response?.ok === false) throw new Error(response.error || t("無法保存選取文字"));
-        showStatus(response?.result?.message || t("已加入 Notion 保存佇列"));
+        showStatus(response?.result?.message || t("已加入保存佇列"));
         setTimeout(closeWindow, 900);
       } catch (error) {
         busy = false;

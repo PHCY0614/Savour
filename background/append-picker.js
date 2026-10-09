@@ -215,7 +215,7 @@
         return { ...result, message: selectionAppendMessage(result) };
       }
       const result = await enqueueCaptures([capture], { verifyExisting: true });
-      return { ...result, message: result.added ? S.t("已加入 Notion 保存佇列") : S.t("這段已經在保存紀錄中") };
+      return { ...result, message: result.added ? S.t("已加入保存佇列") : S.t("這段已經在保存紀錄中") };
     }
 
     // Searches only the configured archive, by page title.

@@ -380,7 +380,7 @@ test("右鍵選單「保存目前頁面」保存的是目前頁面，不論點�
     const queued = (await background.readState()).queue;
     assert.equal(queued.length, 1);
     assert.equal(queued[0].capture.sourceUrl, "https://www.threads.com/@Sample/post/root001");
-    assert.deepEqual(toasts, ["已加入 Notion 保存佇列"]);
+    assert.deepEqual(toasts, ["已加入保存佇列"]);
 
     const popupSender = { id: "extension-id", url: "chrome-extension://extension-id/pages/popup/popup.html" };
     await assert.rejects(background.handleMessage({ type: "PREPARE_APPEND_PICKER" }, { id: "extension-id", tab: { id: 7 }, url: tab.url }), /不支援的操作/);
