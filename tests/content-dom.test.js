@@ -261,3 +261,48 @@ test("無法得知頁面最初載入的網址時，不會判定資料過期而�
   load("single-post");
   assert.deepEqual(content.pageDataStatus(), { stale: false });
 });
+
+test("貼文外層包著導覽列與頁尾時，擷取的只有貼文本身，不含選單與頁尾文字", () => {
+  env.dom.reconfigure({ url: "https://www.threads.com/@sample/post/root001" });
+  document.open();
+  document.write(`<!doctype html><html><body>
+    <div id="page">
+      <nav><a href="/">首頁</a><a href="/new">新串文</a><a href="/inbox">訊息</a></nav>
+      <div id="card" data-pressable-container="true">
+        <a href="/@sample/post/root001"><time datetime="2026-01-01T00:00:00.000Z">1 天</time></a>
+        <div dir="auto">貼文本身的文字</div>
+      </div>
+      <footer><div dir="auto">© 2026</div><div dir="auto">《Threads 使用條款》</div></footer>
+    </div></body></html>`);
+  document.close();
+  const containers = content.collectPostContainers();
+  assert.equal(containers.length, 1);
+  assert.equal(containers[0].id, "card");
+  const capture = content.extractPost(containers[0]);
+  assert.match(capture.text, /貼文本身的文字/);
+  assert.doesNotMatch(capture.text, /首頁|使用條款|2026/);
+});
+
+test("按「更多」後貼文被重新繪製、空了一下子，仍等它有內容才擷取，不把整頁的選單與頁尾當成貼文", async () => {
+  env.dom.reconfigure({ url: "https://www.threads.com/@sample/post/root001" });
+  document.open();
+  document.write(`<!doctype html><html><body>
+    <div id="page">
+      <nav><a href="/">首頁</a><a href="/new">新串文</a></nav>
+      <div id="slot"></div>
+      <footer><div dir="auto">© 2026</div><div dir="auto">《Threads 使用條款》</div></footer>
+    </div></body></html>`);
+  document.close();
+  const card = (/** @type {string} */ inner) => `<div data-pressable-container="true">
+    <a href="/@sample/post/root001"><time datetime="2026-01-01T00:00:00.000Z">1 天</time></a>${inner}</div>`;
+  const slot = /** @type {HTMLElement} */ (document.getElementById("slot"));
+  slot.innerHTML = card(`<div dir="auto">貼文開頭…</div><div role="button">顯示更多</div>`);
+  slot.querySelector("[role='button']")?.addEventListener("click", () => {
+    // Threads draws the post again: an empty card first, the full text a moment later.
+    slot.innerHTML = card("");
+    setTimeout(() => { slot.innerHTML = card(`<div dir="auto">貼文開頭，以及展開後的全文</div>`); }, 600);
+  });
+  const capture = await content.captureCurrentThread(false);
+  assert.match(capture.text, /展開後的全文/);
+  assert.doesNotMatch(capture.text, /首頁|使用條款|2026/);
+});

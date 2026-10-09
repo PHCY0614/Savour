@@ -498,3 +498,11 @@ test("頁面上的相對網址以頁面網址補全，不是網址的 href 回�
   assert.equal(S.resolveUrl("/in/someone/", "https://www.linkedin.com/feed/")?.href, "https://www.linkedin.com/in/someone/");
   assert.equal(S.resolveUrl("http://[bad", "https://example.com/"), null);
 });
+
+test("含網站導覽列或頁尾的容器是整個頁面，不會被當成貼文，即使它的文字比貼文自己的卡片多", () => {
+  const base = { connected: true, visible: true, directPostId: "MAIN", semantic: false, nestedPostCount: 0, postIds: ["MAIN"] };
+  const card = { ...base, hasTextEvidence: false, textEvidenceLength: 0, nodeCount: 20, ownCard: true };
+  const page = { ...base, hasTextEvidence: true, textEvidenceLength: 400, nodeCount: 900, containsPageChrome: true };
+  assert.equal(S.choosePostCandidate([page, card], "MAIN"), card);
+  assert.equal(S.choosePostCandidate([page], "MAIN"), null);
+});

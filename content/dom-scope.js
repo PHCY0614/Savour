@@ -24,6 +24,7 @@
     const currentRouteSignature = options.currentRouteSignature;
     const getExtractors = options.getExtractors;
     let postScopeCache = new WeakMap();
+    const PAGE_CHROME_SELECTOR = "nav, footer, main, [role='navigation'], [role='banner'], [role='main'], [role='contentinfo']";
 
     /**
      * Forgets every computed post scope. Call when the page changes route.
@@ -373,6 +374,9 @@
         textEvidenceLength,
         mediaEvidenceCount,
         nodeCount: container.querySelectorAll("*").length,
+        // A wrapper that holds the site's navigation or footer is the page, not the post; its menu and
+        // footer text must never be saved as the post.
+        containsPageChrome: Boolean(container.querySelector(PAGE_CHROME_SELECTOR)),
         documentOrder
       };
     }

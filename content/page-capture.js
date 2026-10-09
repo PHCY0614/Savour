@@ -97,8 +97,18 @@
 
       await expandVisibleText(rootContainer, () => currentRouteSignature() === routeAtStart);
       ensureRouteUnchanged(routeAtStart);
-      containers = collectPostContainers();
-      rootContainer = findContainerInListByPostId(containers, current.postId);
+      // Opening "more" can make Threads draw the post again, so the old element is gone and the new one
+      // may be empty for a moment; wait until the post holds its content again before reading it.
+      const settleDeadline = Date.now() + 4000;
+      for (;;) {
+        containers = collectPostContainers();
+        rootContainer = findContainerInListByPostId(containers, current.postId);
+        const entry = rootContainer ? extractPost(rootContainer, { expectedPostId: current.postId }) : null;
+        if (entry && isMeaningfulEntry(entry)) break;
+        if (Date.now() >= settleDeadline) break;
+        await S.sleep(150);
+        ensureRouteUnchanged(routeAtStart);
+      }
       if (!rootContainer) throw new Error(S.t("貼文載入期間結構已改變，請重新嘗試保存"));
 
       const root = extractPost(rootContainer, { expectedPostId: current.postId });
