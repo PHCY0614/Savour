@@ -12,10 +12,10 @@
   "use strict";
 
   /**
-   * @param {Pick<import("../types").Services, "INCOMPLETE_THREAD_FLAG" | "S" | "activeThreadsTab" | "enqueueCaptures" | "ensureFreshThreadPage" | "ensurePageScripts" | "fetchImageInTab" | "mediaStage" | "getStatus" | "readState" | "sendToTab" | "withStateLock" | "writeState">} deps services from background.js
+   * @param {Pick<import("../types").Services, "D" | "INCOMPLETE_THREAD_FLAG" | "S" | "activeThreadsTab" | "enqueueCaptures" | "ensureFreshThreadPage" | "ensurePageScripts" | "fetchImageInTab" | "mediaStage" | "getStatus" | "readState" | "sendToTab" | "withStateLock" | "writeState">} deps services from background.js
    */
   function createCaptureFlow(deps) {
-    const { INCOMPLETE_THREAD_FLAG, S, activeThreadsTab, enqueueCaptures, ensureFreshThreadPage, ensurePageScripts, fetchImageInTab, getStatus, mediaStage, readState, sendToTab, withStateLock, writeState } = deps;
+    const { D, INCOMPLETE_THREAD_FLAG, S, activeThreadsTab, enqueueCaptures, ensureFreshThreadPage, ensurePageScripts, fetchImageInTab, getStatus, mediaStage, readState, sendToTab, withStateLock, writeState } = deps;
 
     const MAX_STAGED_IMAGES = 60;
     const MAX_STAGED_BYTES = 120 * 1024 * 1024;
@@ -25,7 +25,7 @@
       const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
       const url = tab?.url ?? "";
       if (!tab?.id || !S.isSupportedSourceUrl(url)) return { supported: false, status: "unsupported" };
-      const local = S.localPostCaptureStatus(await readState(), url);
+      const local = D.localPostCaptureStatus(await readState(), url);
       return {
         supported: true,
         status: local.status,
@@ -103,7 +103,7 @@
       tab ||= await activeThreadsTab();
       const update = Boolean(options.update);
       const local = update
-        ? S.localPostCaptureStatus(await readState(), tab.url)
+        ? D.localPostCaptureStatus(await readState(), tab.url)
         : await preflightActiveThreadFromLocalState(tab.url);
       // A saved page flagged 串文未完整 gets its missing parts added; nothing already on the page is rewritten.
       const appendMissing = !update && local.status === "saved" && isIncompleteThreadRecord(local.record);
@@ -146,7 +146,7 @@
     async function preflightActiveThreadFromLocalState(/** @type {string} */ sourceUrl) {
       return withStateLock(async () => {
         const state = await readState();
-        const local = S.localPostCaptureStatus(state, sourceUrl);
+        const local = D.localPostCaptureStatus(state, sourceUrl);
         if (local.status !== "saved" || isIncompleteThreadRecord(local.record)) return local;
         const record = local.record ?? {};
         state.recent.unshift({

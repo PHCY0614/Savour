@@ -251,6 +251,38 @@ test("新文章一律排在佇列尾端，不會以覆寫項目插隊", async ()
   assert.equal(state.queue.some(item => "replaceExisting" in item), false);
 });
 
+test("入列與保存時產生的去重鍵，popup 查詢目前頁面狀態時都認得是同一篇", async () => {
+  await resetStorage();
+  const originalQuery = chromeMock.tabs.query;
+  let activeUrl = "";
+  chromeMock.tabs.query = async () => [{ id: 7, url: activeUrl }];
+  const pageStatus = async url => {
+    activeUrl = url;
+    return (await background.handleMessage({ type: "GET_ACTIVE_PAGE_STATUS" }, PAGE_SENDER)).status;
+  };
+  try {
+    const shortUrl = "https://threads.net/t/root001";
+    const authorUrl = "https://www.threads.com/@sample/post/root001?xmt=tracking";
+    assert.equal(await pageStatus(authorUrl), "new");
+
+    await background.enqueueCaptures([rawPost()]);
+    await settleQueue();
+    assert.equal(await pageStatus(authorUrl), "pending");
+    assert.equal(await pageStatus(shortUrl), "pending");
+
+    // Once synced, the queue item is gone and the local index holds the key the capture was queued under.
+    const capture = background.sanitizeCapture(rawPost());
+    const state = structuredClone(background.DEFAULT_STATE);
+    state.saved[capture.dedupeKey] = { sourceUrl: capture.sourceUrl, title: "已保存", notionPageId: "saved-page" };
+    await background.writeState(state);
+    assert.equal(await pageStatus(authorUrl), "saved");
+    assert.equal(await pageStatus(shortUrl), "saved");
+    assert.equal(await pageStatus("https://www.threads.com/@sample/post/other009"), "new");
+  } finally {
+    chromeMock.tabs.query = originalQuery;
+  }
+});
+
 test("正在同步的同篇貼文再次保存只會略過", async () => {
   await resetStorage();
   const capture = background.sanitizeCapture(rawPost());

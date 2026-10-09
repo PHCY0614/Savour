@@ -328,6 +328,7 @@ export type PageTab = chrome.tabs.Tab & { id: number; url: string };
 export interface Services {
   // Modules
   S: typeof import("./lib/shared.js");
+  D: typeof import("./model/dedupe-key.js");
   N: typeof import("./notion/index.js");
   I: typeof import("./i18n/index.js");
   CONFIG_KEY: string;

@@ -51,7 +51,6 @@ test("選取文字維持同步 FNV key 且不與完整貼文相等", () => {
   const selectionKey = D.captureKey({ ...capture, captureType: "selection" });
   assert.match(selectionKey, /^selection:https:\/\/www\.threads\.com\/t\/ABC123:[0-9a-f]{8}$/);
   assert.notEqual(selectionKey, D.captureKey({ ...capture, captureType: "post" }));
-  assert.equal(selectionKey, S.captureKey({ ...capture, captureType: "selection" }));
 });
 
 
@@ -96,17 +95,17 @@ test("本機保存狀態在各平台都認得已保存、等待中與失敗的�
       saved: {}
     });
 
-    assert.deepEqual(S.localPostCaptureStatus({ queue: [], saved: { [key]: record } }, sourceUrl), {
+    assert.deepEqual(D.localPostCaptureStatus({ queue: [], saved: { [key]: record } }, sourceUrl), {
       status: "saved", key, record
     }, sourceUrl);
-    assert.deepEqual(S.localPostCaptureStatus(queued("pending"), sourceUrl), {
+    assert.deepEqual(D.localPostCaptureStatus(queued("pending"), sourceUrl), {
       status: "pending", key, queueId: "Q1"
     }, sourceUrl);
-    assert.equal(S.localPostCaptureStatus(queued("failed"), sourceUrl).status, "failed", sourceUrl);
-    assert.equal(S.localPostCaptureStatus({ queue: [], saved: {} }, sourceUrl).status, "new", sourceUrl);
+    assert.equal(D.localPostCaptureStatus(queued("failed"), sourceUrl).status, "failed", sourceUrl);
+    assert.equal(D.localPostCaptureStatus({ queue: [], saved: {} }, sourceUrl).status, "new", sourceUrl);
     // A selection from the same page is not the post itself.
     const selectionKey = D.captureKey({ captureType: "selection", sourceUrl, text: "一段" });
-    assert.equal(S.localPostCaptureStatus({
+    assert.equal(D.localPostCaptureStatus({
       queue: [],
       saved: { [selectionKey]: { sourceUrl, captureType: "selection" } }
     }, sourceUrl).status, "new", sourceUrl);
@@ -116,10 +115,10 @@ test("本機保存狀態在各平台都認得已保存、等待中與失敗的�
 test("本機保存狀態會忽略追蹤參數，不同網站的同名路徑不算同一篇", () => {
   const key = D.captureKey({ sourceUrl: "https://a.example.com/post/1" });
   const state = { queue: [], saved: { [key]: { sourceUrl: "https://a.example.com/post/1" } } };
-  assert.equal(S.localPostCaptureStatus(state, "https://a.example.com/post/1?utm_source=x").status, "saved");
-  assert.equal(S.localPostCaptureStatus(state, "https://b.example.com/post/1").status, "new");
+  assert.equal(D.localPostCaptureStatus(state, "https://a.example.com/post/1?utm_source=x").status, "saved");
+  assert.equal(D.localPostCaptureStatus(state, "https://b.example.com/post/1").status, "new");
   // Threads short and author URLs of one post are the same post.
   const threadsKey = D.captureKey({ sourceUrl: "https://www.threads.com/@example/post/ABC123" });
   const threads = { queue: [], saved: { [threadsKey]: { sourceUrl: "https://www.threads.com/@example/post/ABC123" } } };
-  assert.equal(S.localPostCaptureStatus(threads, "https://threads.net/t/ABC123").status, "saved");
+  assert.equal(D.localPostCaptureStatus(threads, "https://threads.net/t/ABC123").status, "saved");
 });

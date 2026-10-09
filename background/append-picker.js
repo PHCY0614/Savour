@@ -12,15 +12,15 @@
   "use strict";
 
   /**
-   * @param {Pick<import("../types").Services, "I" | "N" | "S" | "ensureArchiveSchema" | "enqueueCaptures" | "enqueueSelectionAppend" | "notionRequest" | "readConfig" | "readState" | "requireToken" | "sendToTab">} deps services from background.js
+   * @param {Pick<import("../types").Services, "D" | "I" | "N" | "S" | "ensureArchiveSchema" | "enqueueCaptures" | "enqueueSelectionAppend" | "notionRequest" | "readConfig" | "readState" | "requireToken" | "sendToTab">} deps services from background.js
    */
   function createAppendPicker(deps) {
-    const { I, N, S, ensureArchiveSchema, enqueueCaptures, enqueueSelectionAppend, notionRequest, readConfig, readState, requireToken, sendToTab } = deps;
+    const { D, I, N, S, ensureArchiveSchema, enqueueCaptures, enqueueSelectionAppend, notionRequest, readConfig, readState, requireToken, sendToTab } = deps;
 
     // The Notion page of the post open in the tab, when this post is already saved.
     async function currentPostAppendTarget(/** @type {string} */ sourceUrl) {
       const state = await readState();
-      const local = S.localPostCaptureStatus(state, sourceUrl ?? "");
+      const local = D.localPostCaptureStatus(state, sourceUrl ?? "");
       const pageId = S.extractNotionId(local.record?.notionPageId);
       if (local.status !== "saved" || !pageId) return null;
       return { pageId, title: S.cleanText(local.record?.title) || S.t("這篇的頁面") };

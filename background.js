@@ -22,6 +22,10 @@ const I = typeof module === "object" && module.exports
   : SavourI18n;
 const S = SavourShared;
 const N = SavourNotion;
+/** @type {typeof import("./model/dedupe-key.js")} */
+const D = typeof module === "object" && module.exports
+  ? require("./model/dedupe-key.js")
+  : SavourDedupeKey;
 /** @type {typeof import("./notion/http.js")} */
 const NH = typeof module === "object" && module.exports
   ? require("./notion/http.js")
@@ -252,6 +256,7 @@ const {
 });
 
 const { activePageStatus, captureActiveSelection, captureActiveThread } = BC.createCaptureFlow({
+  D,
   INCOMPLETE_THREAD_FLAG,
   S,
   activeThreadsTab,
@@ -279,6 +284,7 @@ const {
   selectionAppendMessage,
   takePendingPicker
 } = BK.createAppendPicker({
+  D,
   I,
   N,
   S,

@@ -284,12 +284,12 @@ test("單篇擷取與入列由背景服務完成，不依賴彈出視窗持續�
 test("已存在的單篇文章會在完整擷取前由本機索引快速略過", () => {
   const popup = read("pages/popup/popup.js");
   const background = read("background.js");
-  const shared = read("lib/shared.js");
+  const dedupe = read("model/dedupe-key.js");
   const captureFunction = background.slice(
     background.indexOf("async function captureActiveThread"),
     background.indexOf("async function preflightActiveThreadFromLocalState")
   );
-  assert.match(shared, /function localPostCaptureStatus/);
+  assert.match(dedupe, /function localPostCaptureStatus/);
   assert.match(captureFunction, /preflightActiveThreadFromLocalState\(tab\.url\)/);
   assert.ok(
     captureFunction.indexOf("preflightActiveThreadFromLocalState")

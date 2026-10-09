@@ -3,6 +3,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const S = require("../lib/shared.js");
+const D = require("../model/dedupe-key.js");
 
 test("清理文字並保留段落", () => {
   assert.equal(S.cleanText("  第一段  \r\n\r\n\r\n 第二段\t "), "第一段\n\n第二段");
@@ -21,7 +22,7 @@ test("長文附件網址會還原為真正貼文網址", () => {
     "https://www.threads.com/@Example/post/ABC123"
   );
   assert.equal(
-    S.captureKey({ captureType: "post", sourceUrl: "https://www.threads.com/@Example/post/ABC123/media" }),
+    D.captureKey({ captureType: "post", sourceUrl: "https://www.threads.com/@Example/post/ABC123/media" }),
     "tsc:ABC123"
   );
 });
@@ -44,7 +45,7 @@ test("X 與 Twitter 貼文網址統一成 x.com，並可從編號推算發布時
     postId: "1790000000000000034",
     platform: "x"
   });
-  assert.equal(S.captureKey({ sourceUrl: "https://twitter.com/sample/status/20" }), "x:20");
+  assert.equal(D.captureKey({ sourceUrl: "https://twitter.com/sample/status/20" }), "x:20");
   assert.equal(S.xStatusTime("1790000000000000034"), "2024-05-13T12:43:51.248Z");
   assert.equal(S.xStatusTime("20"), "");
   assert.equal(S.parseThreadsUrl("https://x.com/home").postId, "");
@@ -56,7 +57,7 @@ test("一般網頁保留決定內容的參數，只移除追蹤參數與 #", () 
     "https://news.example.com/a/b.php?id=3"
   );
   assert.equal(S.normalizeThreadsUrl("https://blog.example.com/post/1?utm_medium=a"), "https://blog.example.com/post/1");
-  assert.equal(S.captureKey({ sourceUrl: "https://blog.example.com/post/1#x" }), "web:https://blog.example.com/post/1");
+  assert.equal(D.captureKey({ sourceUrl: "https://blog.example.com/post/1#x" }), "web:https://blog.example.com/post/1");
   // Another site's /@name/post/... path is not a Threads post.
   assert.deepEqual(S.parseThreadsUrl("https://medium.com/@writer/post/abc"), {
     normalized: "https://medium.com/@writer/post/abc",
@@ -83,8 +84,8 @@ test("網頁的本機保存狀態只比對同一個網址，不會被其他網�
       "web:https://a.example.com/post/1": { sourceUrl: "https://a.example.com/post/1", title: "A" }
     }
   };
-  assert.equal(S.localPostCaptureStatus(state, "https://a.example.com/post/1?utm_source=x").status, "saved");
-  assert.equal(S.localPostCaptureStatus(state, "https://b.example.com/post/1").status, "new");
+  assert.equal(D.localPostCaptureStatus(state, "https://a.example.com/post/1?utm_source=x").status, "saved");
+  assert.equal(D.localPostCaptureStatus(state, "https://b.example.com/post/1").status, "new");
 });
 
 test("從 Notion 網址擷取 UUID", () => {
@@ -117,8 +118,8 @@ test("非 Notion 網址不會被當成 Database 網址", () => {
 
 test("完整貼文與選取文字使用不同去重鍵", () => {
   const base = { sourceUrl: "https://threads.net/@a/post/1", text: "一段文字" };
-  assert.equal(S.captureKey({ ...base, captureType: "post" }), "tsc:1");
-  assert.match(S.captureKey({ ...base, captureType: "selection" }), /^selection:https:\/\/www\.threads\.com\/@a\/post\/1:[0-9a-f]{8}$/);
+  assert.equal(D.captureKey({ ...base, captureType: "post" }), "tsc:1");
+  assert.match(D.captureKey({ ...base, captureType: "selection" }), /^selection:https:\/\/www\.threads\.com\/@a\/post\/1:[0-9a-f]{8}$/);
 });
 
 test("長文字會分段且不遺失內容", () => {
@@ -420,12 +421,12 @@ test("保存目前文章可先由本機索引判斷已存在或正在等待", ()
   const key = `post:${sourceUrl}`;
   const savedRecord = { sourceUrl, title: "已保存文章", notionUrl: "https://notion.so/page" };
 
-  assert.deepEqual(S.localPostCaptureStatus({ queue: [], saved: { [key]: savedRecord } }, sourceUrl), {
+  assert.deepEqual(D.localPostCaptureStatus({ queue: [], saved: { [key]: savedRecord } }, sourceUrl), {
     status: "saved",
     key,
     record: savedRecord
   });
-  assert.deepEqual(S.localPostCaptureStatus({
+  assert.deepEqual(D.localPostCaptureStatus({
     queue: [{
       id: "QUEUE1",
       status: "pending",
@@ -437,7 +438,7 @@ test("保存目前文章可先由本機索引判斷已存在或正在等待", ()
     key,
     queueId: "QUEUE1"
   });
-  assert.equal(S.localPostCaptureStatus({
+  assert.equal(D.localPostCaptureStatus({
     queue: [{
       id: "QUEUE2",
       status: "failed",
@@ -445,7 +446,7 @@ test("保存目前文章可先由本機索引判斷已存在或正在等待", ()
     }],
     saved: {}
   }, sourceUrl).status, "failed");
-  assert.equal(S.localPostCaptureStatus({
+  assert.equal(D.localPostCaptureStatus({
     queue: [],
     saved: {
       "selection:test": { sourceUrl, captureType: "selection" }
