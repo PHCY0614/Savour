@@ -310,6 +310,9 @@
       const textEvidence = [...container.querySelectorAll("[dir='auto']")].some(node => {
         if (sourceLink.contains(node) || node.closest(profileInfoSelector) || node.closest("time")) return false;
         if (node.querySelector("[dir='auto']")) return false;
+        // A quote card's text follows its permalink. Text before the link belongs to the post that holds the
+        // card (a reshared video's link sits under the post's own text), so it is no sign of a quote card.
+        if (node.compareDocumentPosition(sourceLink) & Node.DOCUMENT_POSITION_FOLLOWING) return false;
         const text = S.cleanText(node.innerText || node.textContent);
         return Boolean(text && !S.isThreadsUiText(text, author) && !extractors.isThreadPositionElement(node));
       });
@@ -330,7 +333,11 @@
       if (!scope?.excludedPostIds?.length) return false;
       const ownCard = scope.directAnchor.closest("[data-pressable-container='true']");
       if (ownCard && ownCard !== container && container.contains(ownCard)) return false;
-      const quoteCards = scope.excludedRoots.filter((/** @type {Element} */ root) => root.matches("[data-pressable-container='true']"));
+      // In the post's own card, another post's link need not sit in a quote card: a reshared video carries
+      // only a link to the original under its text. Anywhere else the other post must be in a quote card.
+      const quoteCards = ownCard === container
+        ? scope.excludedRoots
+        : scope.excludedRoots.filter((/** @type {Element} */ root) => root.matches("[data-pressable-container='true']"));
       if (!quoteCards.length) return false;
       return [...container.querySelectorAll("a[href]")].every(anchor => {
         const postId = isPostLink(anchor.href) ? S.parseThreadsUrl(anchor.href).postId : "";

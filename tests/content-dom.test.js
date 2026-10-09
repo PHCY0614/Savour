@@ -342,3 +342,10 @@ test("留言區的巢狀：每組開頭的作者貼文是直接回覆主貼文�
   const capture = await content.captureCurrentThread(true);
   assert.deepEqual(capture.authorReplies.map((/** @type {any} */ item) => item.text), ["⚠️ 作者直接回覆自己的貼文"]);
 });
+
+test("轉貼影片的貼文：底下只有一個指向原作者貼文的連結，仍讀得到貼文自己的正文", async () => {
+  load("video-attribution", "https://www.threads.com/@sample/post/video001");
+  const capture = await content.captureCurrentThread(false);
+  assert.equal(capture.text, "這是一則轉貼影片的測試貼文。 🤣\n\n第二段測試文字。");
+  assert.equal(capture.sourceUrl, "https://www.threads.com/@sample/post/video001");
+});
