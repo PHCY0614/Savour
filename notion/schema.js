@@ -55,6 +55,13 @@
     Object.entries(COLUMNS).map(([key, column]) => [key, column.names.zh])
   ));
 
+  // The order a new archive's views list its columns: what readers look at first, the internal ones last.
+  const VIEW_COLUMN_ORDER = Object.freeze([
+    "title", "platform", "sourceUrl", "author", "publishedAt", "savedAt", "topicTag", "postId", "captureKey", "contentRange"
+  ]);
+  // The name a new archive gets when the user has not typed one, in each interface language.
+  const DEFAULT_ARCHIVE_NAMES = Object.freeze({ zh: "留己看", en: "For Later Me" });
+
   // Columns the extension needs but readers do not; they are hidden in the archive's views.
   const INTERNAL_COLUMNS = Object.freeze(["captureKey", "postId", "contentRange"]);
   // View types whose configuration has no other required fields, so only visibility is sent.
@@ -182,7 +189,9 @@
   // The view update that hides the internal columns, or null when the view needs no change or is
   // of a type whose configuration cannot be sent on its own. Every other column keeps its place and
   // visibility; dataSourceProperties ({ name: { id } }) supplies ids for columns the view has not listed.
-  function hiddenColumnsViewUpdate(/** @type {any} */ view, /** @type {any} */ dataSourceProperties, dataSourceId = "", /** @type {import("../types").ColumnMap} */ columnMap = defaultColumnMap()) {
+  // With `arrange` (a newly created archive only) the extension's columns are also put in VIEW_COLUMN_ORDER,
+  // the name first: Notion lists a new data source's columns in an order of its own.
+  function hiddenColumnsViewUpdate(/** @type {any} */ view, /** @type {any} */ dataSourceProperties, dataSourceId = "", /** @type {import("../types").ColumnMap} */ columnMap = defaultColumnMap(), { arrange = false } = {}) {
     if (!VIEW_TYPES_WITH_COLUMNS.has(view?.type)) return null;
     // A database can hold other data sources; their views have other columns.
     if (dataSourceId && shared.extractNotionId(view.data_source_id) !== shared.extractNotionId(dataSourceId)) return null;
@@ -201,13 +210,30 @@
     for (const id of internalIds) {
       if (!properties.some((/** @type {any} */ item) => item?.property_id === id)) properties.push({ property_id: id, visible: false });
     }
+    if (arrange) {
+      const knownIds = new Set(Object.values(dataSourceProperties ?? {}).map(property => property?.id).filter(Boolean));
+      const orderedIds = VIEW_COLUMN_ORDER
+        .map(key => columnMap.columns[key])
+        .map(column => (knownIds.has(column?.id) ? column.id : dataSourceProperties?.[column?.name]?.id))
+        .filter(Boolean);
+      const first = orderedIds
+        .map(id => properties.find((/** @type {any} */ item) => item?.property_id === id))
+        .filter(Boolean);
+      properties.splice(0, properties.length, ...first, ...properties.filter((/** @type {any} */ item) => !orderedIds.includes(item?.property_id)));
+    }
     const changed = !listed
       || properties.length !== listed.length
-      || properties.some((/** @type {any} */ item, /** @type {number} */ index) => item.visible !== listed[index]?.visible);
+      || properties.some((/** @type {any} */ item, /** @type {number} */ index) => item.visible !== listed[index]?.visible || item.property_id !== listed[index]?.property_id);
     return changed ? { configuration: { type: view.type, properties } } : null;
   }
 
   // ---- New archive ----
+
+  // The name typed by the user, or the default in the archive's language when it is empty or is one of the defaults.
+  function archiveTitle(/** @type {unknown} */ name, /** @type {Language} */ language) {
+    const text = shared.cleanText(name);
+    return !text || /** @type {string[]} */ (Object.values(DEFAULT_ARCHIVE_NAMES)).includes(text) ? DEFAULT_ARCHIVE_NAMES[language] : text;
+  }
 
   /**
    * The request that creates a new archive, with its columns named in `language`.
@@ -218,7 +244,7 @@
   function createArchivePayload(name, parentPageId, language = "zh") {
     /** @type {any} */
     const payload = {
-      title: [{ type: "text", text: { content: shared.cleanText(name) || shared.t("留己看") } }],
+      title: [{ type: "text", text: { content: archiveTitle(name, languageOf(language)) } }],
       description: [{ type: "text", text: { content: shared.t("保存你感興趣、想收藏，等之後慢慢消化的文字。") } }],
       is_inline: false,
       icon: { type: "emoji", emoji: "📥" },

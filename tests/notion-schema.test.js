@@ -84,3 +84,39 @@ test("已經隱藏、其他資料來源或需要額外設定的檢視不會被�
   assert.deepEqual(fresh.configuration.properties.filter(item => !item.visible).map(item => item.property_id), ["key1", "pid1", "rng1"]);
   assert.equal(fresh.configuration.properties.length, 6);
 });
+
+test("新建整理庫時，檢視的欄位依閱讀順序排列、名稱在最前面；一般連接不重排", () => {
+  const properties = {
+    名稱: { id: "title" },
+    來源: { id: "src" },
+    來源網址: { id: "url1" },
+    作者: { id: "au" },
+    發布時間: { id: "pub" },
+    保存時間: { id: "sav" },
+    "Threads 主題": { id: "tag" },
+    貼文編號: { id: "pid1" },
+    擷取鍵: { id: "key1" },
+    原文範圍: { id: "rng1" },
+    我的備註: { id: "mine" }
+  };
+  // Notion lists a new data source's columns in an order of its own, the name last.
+  const view = {
+    type: "table",
+    data_source_id: DATA_SOURCE_ID,
+    configuration: { type: "table", properties: ["url1", "pub", "sav", "tag", "au", "src", "key1", "pid1", "rng1", "mine", "title"].map(id => ({ property_id: id, visible: true })) }
+  };
+  const arranged = schema.hiddenColumnsViewUpdate(view, properties, DATA_SOURCE_ID, schema.defaultColumnMap(), { arrange: true });
+  assert.deepEqual(arranged.configuration.properties.map(item => item.property_id), ["title", "src", "url1", "au", "pub", "sav", "tag", "pid1", "key1", "rng1", "mine"]);
+  assert.deepEqual(arranged.configuration.properties.filter(item => !item.visible).map(item => item.property_id), ["pid1", "key1", "rng1"]);
+  // Without `arrange` the order is left as it is.
+  const plain = schema.hiddenColumnsViewUpdate(view, properties, DATA_SOURCE_ID);
+  assert.deepEqual(plain.configuration.properties.map(item => item.property_id), view.configuration.properties.map(item => item.property_id));
+});
+
+test("新整理庫沒有自訂名稱時，標題用該語言的預設名稱；自訂名稱照用", () => {
+  const title = (/** @type {string} */ name, /** @type {"zh" | "en"} */ language) => schema.createArchivePayload(name, "", language).title[0].text.content;
+  assert.equal(title("留己看", "en"), "For Later Me");
+  assert.equal(title("For Later Me", "zh"), "留己看");
+  assert.equal(title("", "en"), "For Later Me");
+  assert.equal(title("我的收藏", "en"), "我的收藏");
+});

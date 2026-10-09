@@ -51,8 +51,8 @@
   const valueOf = (/** @type {any} */ page, /** @type {string} */ key) => pageProperty(page?.properties, column(key));
 
   // Hides the internal columns of the archive in use; see notion/schema.js.
-  function hiddenColumnsViewUpdate(/** @type {any} */ view, /** @type {any} */ dataSourceProperties, dataSourceId = "") {
-    return schema.hiddenColumnsViewUpdate(view, dataSourceProperties, dataSourceId, columnMap);
+  function hiddenColumnsViewUpdate(/** @type {any} */ view, /** @type {any} */ dataSourceProperties, dataSourceId = "", /** @type {{ arrange?: boolean }} */ options = {}) {
+    return schema.hiddenColumnsViewUpdate(view, dataSourceProperties, dataSourceId, columnMap, options);
   }
 
   const {

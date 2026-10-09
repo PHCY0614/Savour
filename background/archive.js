@@ -163,7 +163,7 @@
       await chrome.storage.local.set({ [CONFIG_KEY]: next });
       await resetLocalIndexForDataSource(config.dataSourceId, dataSourceId);
       // The new archive's default view shows every column until its internal ones are hidden.
-      await ensureArchiveSchema(dataSourceId, token, { force: true }).catch(() => {});
+      await ensureArchiveSchema(dataSourceId, token, { force: true, arrange: true }).catch(() => {});
       scheduleQueue(100);
       return { ...next, hasToken: true };
     }
@@ -204,7 +204,7 @@
      * added because its name is taken by a column of another type.
      * @param {string} dataSourceId
      * @param {string} token
-     * @param {{ force?: boolean }} [options]
+     * @param {{ force?: boolean, arrange?: boolean }} [options] `arrange` puts a new archive's columns in reading order
      * @returns {Promise<{ dataSource: any, addedProperties: string[] }>}
      */
     async function ensureArchiveSchema(dataSourceId, token, options = {}) {
@@ -244,14 +244,14 @@
         await chrome.storage.local.set({ [CONFIG_KEY]: { ...latest, columnMap } });
       }
       schemaReadyDataSourceId = dataSourceId;
-      await ensureInternalColumnsHidden(dataSource, token);
+      await ensureInternalColumnsHidden(dataSource, token, { arrange: Boolean(options.arrange) });
       return { dataSource, addedProperties };
     }
 
     // Hides 擷取鍵, 貼文編號 and 原文範圍 in the archive's views, once per data source: the first
     // time an archive is created or connected. Columns the user shows again later stay visible. Views
     // are only presentation, so a failure here never stops saving; it is tried again next time.
-    async function ensureInternalColumnsHidden(/** @type {any} */ dataSource, /** @type {string} */ token) {
+    async function ensureInternalColumnsHidden(/** @type {any} */ dataSource, /** @type {string} */ token, { arrange = false } = {}) {
       const config = await readConfig();
       const dataSourceId = S.extractNotionId(dataSource?.id);
       if (!dataSourceId || S.extractNotionId(config.internalColumnsHiddenFor) === dataSourceId) return;
@@ -269,7 +269,7 @@
             token,
             retrySafe: true
           });
-          const update = N.hiddenColumnsViewUpdate(view, dataSource.properties, dataSourceId);
+          const update = N.hiddenColumnsViewUpdate(view, dataSource.properties, dataSourceId, { arrange });
           if (!update) continue;
           await notionRequest(`/v1/views/${view.id}`, { method: "PATCH", body: update, token, retrySafe: true });
         }
