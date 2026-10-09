@@ -349,3 +349,14 @@ test("轉貼影片的貼文：底下只有一個指向原作者貼文的連結�
   assert.equal(capture.text, "這是一則轉貼影片的測試貼文。 🤣\n\n第二段測試文字。");
   assert.equal(capture.sourceUrl, "https://www.threads.com/@sample/post/video001");
 });
+
+test("貼文本身有影片時提示影片不會保存；只有引用貼文裡有影片時不提示", async () => {
+  load("video-attribution", "https://www.threads.com/@sample/post/video001");
+  const withVideo = await content.captureCurrentThread(false);
+  assert.deepEqual(withVideo.captureNotes, ["影片不會保存，只保存文字、圖片與連結。"]);
+
+  load("quoted-post", "https://www.threads.com/@sample/post/quote001");
+  document.querySelector("#embedded-card")?.append(document.createElement("video"));
+  const quotedVideo = await content.captureCurrentThread(false);
+  assert.deepEqual(quotedVideo.captureNotes ?? [], []);
+});

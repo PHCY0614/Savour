@@ -22,6 +22,7 @@ test("DOM extract 工廠只建立明確的抽取器介面", () => {
     "extractPost",
     "extractPostText",
     "extractPostMedia",
+    "hasPostVideo",
     "extractTopicTag",
     "extractThreadPosition",
     "extractHiddenLongTexts"

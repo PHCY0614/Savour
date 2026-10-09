@@ -281,6 +281,15 @@
     }
 
     /**
+     * True when the post itself, not a quoted post, shows a video. Videos are not saved, so the capture says so.
+     * @param {Element} container
+     */
+    function hasPostVideo(container) {
+      if (!(container instanceof Element)) return false;
+      return [...container.querySelectorAll("video")].some(video => belongsToPostContainer(video, container));
+    }
+
+    /**
      * True when `node` is inside the container's own post, not inside a quoted or nested post.
      * @param {Element} node
      * @param {Element} container
@@ -542,7 +551,7 @@
       }
     }
 
-    return { extractPost, extractPostLinks, extractLinkCards, ownTimeElement, stripTopicTagFromText, extractTopicTag, findLinkedTopicTag, findPostHeaderAnchor, topicTagBeforeReference, topicTagFromLink, extractPostMedia, belongsToPostContainer, bestImageUrl, mediaUrlKey, extractPostText, ownAutoTextNodes, scopedAutoTextNodes, cleanPostTextCandidate, isExcludedTextNode, isThreadPositionElement, extractThreadPosition, extractHiddenLongTexts, isExcludedLongTextNode };
+    return { extractPost, extractPostLinks, extractLinkCards, ownTimeElement, stripTopicTagFromText, extractTopicTag, findLinkedTopicTag, findPostHeaderAnchor, topicTagBeforeReference, topicTagFromLink, extractPostMedia, hasPostVideo, belongsToPostContainer, bestImageUrl, mediaUrlKey, extractPostText, ownAutoTextNodes, scopedAutoTextNodes, cleanPostTextCandidate, isExcludedTextNode, isThreadPositionElement, extractThreadPosition, extractHiddenLongTexts, isExcludedLongTextNode };
   }
   return { createDomExtract };
 });

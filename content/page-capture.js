@@ -23,7 +23,7 @@
       findContainerInListByPostId,
       findPostContainer
     } = options.scope;
-    const { extractPost } = options.extract;
+    const { extractPost, hasPostVideo } = options.extract;
 
     /**
      * Captures the selected text, with the author, URL and date of the post it sits in when that post can be verified.
@@ -148,6 +148,7 @@
       const captureGuard = createManualCaptureGuard(current.postId, rootContainer);
       await enrichWithLongText(root, root.sourceUrl, rootContainer, captureGuard);
       const continuations = [];
+      const savedContainers = [rootContainer];
       for (const record of orderedContinuations.ordered) {
         if (!record.structuredTextUsed) {
           await enrichWithLongText(record.entry, record.entry.sourceUrl, record.container, captureGuard);
@@ -157,6 +158,7 @@
           break;
         }
         continuations.push(record.entry);
+        savedContainers.push(record.container);
       }
       const continuationPostIds = new Set(continuations
         .map(entry => S.parseThreadsUrl(entry?.sourceUrl || "").postId)
@@ -170,10 +172,15 @@
         const postId = S.parseThreadsUrl(record.entry?.sourceUrl || "").postId;
         if (postId && continuationPostIds.has(postId)) continue;
         await enrichWithLongText(record.entry, record.entry.sourceUrl, record.container, captureGuard);
-        if (isMeaningfulEntry(record.entry)) authorReplies.push(record.entry);
+        if (!isMeaningfulEntry(record.entry)) continue;
+        authorReplies.push(record.entry);
+        savedContainers.push(record.container);
       }
       root.continuations = continuations;
       root.authorReplies = authorReplies;
+      if (savedContainers.some(hasPostVideo)) {
+        root.captureNotes = [...(root.captureNotes ?? []), S.t("影片不會保存，只保存文字、圖片與連結。")];
+      }
       assertMeaningfulCapture(root);
       return root;
     }
