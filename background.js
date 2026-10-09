@@ -384,7 +384,7 @@ async function saveCurrentPageAndTell(/** @type {import("./types").PageTab} */ t
   await sendToTabWhenReady(tab.id, {
     type: "SHOW_TOAST",
     message: result.added
-      ? result.appendMissing ? S.t("已加入佇列，會把缺少的串文接在原頁面最後") : S.t("已加入 Notion 保存佇列")
+      ? result.appendMissing ? S.t("已加入佇列，會把缺少的串文接在原頁面最後") : S.t("已加入保存佇列")
       : S.t("這篇已經保存或正在等待同步")
   });
 }
@@ -400,7 +400,7 @@ chrome.contextMenus.onClicked.addListener(async (info, clickedTab) => {
     if (info.menuItemId === "savour-append-selection-here") {
       const selection = await sendToTab(tab.id, { type: "CAPTURE_SELECTION", selectionText: info.selectionText ?? "" });
       const target = await currentPostAppendTarget(tab.url);
-      if (!target) throw new Error(S.t("這篇還沒保存到 Notion，請先按「保存目前文章」，或改選「加到其他頁面…」"));
+      if (!target) throw new Error(S.t("這篇還沒保存到 Notion，請先按「保存目前頁面」，或改選「加到其他頁面…」"));
       const result = await enqueueSelectionAppend(selection, target);
       await sendToTab(tab.id, { type: "SHOW_TOAST", message: selectionAppendMessage(result, { withTitle: false }) });
       return;
