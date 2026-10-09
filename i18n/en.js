@@ -17,7 +17,7 @@
   "用目前頁面的內容換掉 Notion 裡的原文；你寫的筆記會保留": "Replaces the original in Notion with this page as it is now; your notes are kept",
   "開啟已保存的 Notion 頁面": "Open the saved Notion page",
   "保存目前選取文字": "Save selected text",
-  "加入現有頁面": "Add to an existing page",
+  "加入現有頁面": "Add to a page",
   "保存目前頁面到 Notion": "Save the current page to Notion",
   "待補完串文": "Incomplete threads",
   "0 篇": "0",
