@@ -98,7 +98,7 @@ These internal columns are hidden in database views during initial setup. To hid
 
 The extension shows recent save results and warnings about potentially incomplete content or images. You can manually retry failed items or export a list to check them.
 
-**Sync Notion** reads the database again and updates the local saved-content records. For example, after deleting an article in Notion, sync before saving it again.
+**Sync Notion**, below Recent, reads the database again and updates the local saved-content records. For example, after deleting an article in Notion, sync before saving it again.
 
 Clearing recent records only clears the list shown in the extension. It does not delete Notion content or reset whether an item has already been saved.
 

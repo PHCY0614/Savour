@@ -362,7 +362,9 @@ button:disabled {
   right: -6px;
   z-index: 2;
   display: grid;
-  min-width: 150px;
+  /* As wide as its labels; the longer "press again" confirmation widens it leftwards. */
+  width: max-content;
+  min-width: 96px;
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -383,6 +385,7 @@ button:disabled {
   cursor: pointer;
   font-size: 12px;
   text-align: left;
+  white-space: nowrap;
 }
 
 .more-list button:hover {
@@ -394,10 +397,22 @@ button:disabled {
   font-weight: 700;
 }
 
+.sync-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+}
+
 .sync-state {
-  margin: 6px 0 0;
+  margin: 0;
   color: var(--muted);
   font-size: 11px;
+}
+
+.sync-row .text-button {
+  flex: none;
 }
 
 .recent-list {

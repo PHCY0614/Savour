@@ -142,10 +142,11 @@ function renderStatus() {
   elements["open-archive"].disabled = !currentStatus.databaseUrl;
   elements["retry-failed"].hidden = !currentStatus.failed;
   elements["sync-notion"].disabled = !currentStatus.configured;
+  elements["sync-notion"].textContent = t("同步 Notion");
   elements["clear-recent"].disabled = !currentStatus.recent?.length;
   renderClearButton();
   elements["sync-state"].textContent = currentStatus.lastSyncedAt
-    ? t("上次同步：{time}", { time: new Date(currentStatus.lastSyncedAt).toLocaleString(I.getLanguage() === "en" ? "en-GB" : "zh-Hant") })
+    ? t("上次同步：{time}", { time: new Date(currentStatus.lastSyncedAt).toLocaleString(I.getLanguage() === "en" ? "en-GB" : "zh-Hant", { dateStyle: "short", timeStyle: "short" }) })
     : t("尚未與 Notion 完整同步");
 
   const actions = ["capture-thread", "save-selection", "append-selection"];
@@ -213,7 +214,8 @@ async function captureOne(pageMessage) {
       : t("已加入保存佇列");
     const reloadNote = result.pageReloaded ? t("已重新整理頁面以讀取完整串文。") : "";
     if (result.localStatus === "saved") {
-      showMessage(t("這篇已經保存過了；內容有變動時可以按「更新 Notion 頁面」"));
+      // The local record says saved; after the page was deleted in Notion, a sync clears that record.
+      showMessage(t("這篇已經保存過了；內容有變動時可以按「更新 Notion 頁面」。在 Notion 刪掉了？先按下方「同步 Notion」再保存。"));
     } else if (result.localStatus === "pending") {
       showMessage(t("這篇正在等待同步"));
     } else if (result.localStatus === "failed") {
@@ -282,8 +284,8 @@ async function retryFailed() {
 }
 
 async function syncNotionState() {
-  setMoreMenu(false);
   await runBusy(async () => {
+    elements["sync-notion"].textContent = t("同步中…");
     const result = await sendBackground({ type: "SYNC_NOTION_STATE" });
     showMessage(t("同步完成，共 {synced} 篇。新增 {added} 篇，移除 {removed} 筆舊紀錄", { synced: result.synced, added: result.added, removed: result.removed }));
   });
