@@ -208,12 +208,20 @@
     // The author's own posts that follow the post with nobody else's in between. When the page carries no
     // thread data to say who a reply answers, these are the author adding to their own post.
     let authorRunOpen = true;
+    // Threads wraps each top-level reply and the replies under it in one group. The author's post that starts
+    // a group answers the post itself; one further down a group answers someone else.
+    let previousContainer = rootContainer;
+    let previousWasSupplement = false;
 
     for (const container of following.slice(0, 250)) {
       if (hasConversationBoundaryBetween(rootContainer, container)) break;
       const sourceUrl = findPostUrl(container);
       const parsed = S.parseThreadsUrl(sourceUrl);
       if (parsed.handle && parsed.handle !== targetAuthor) authorRunOpen = false;
+      const previous = previousContainer;
+      const previousSupplement = previousWasSupplement;
+      previousContainer = container;
+      previousWasSupplement = false;
       if (!parsed.postId || seenPostIds.has(parsed.postId)) continue;
       const relationship = options.relationshipByPostId?.get(parsed.postId);
       const position = extractThreadPosition(container)
@@ -243,7 +251,9 @@
       if (parsed.handle === targetAuthor) {
         const isDirectAuthorReply = relationship
           ? S.isDirectAuthorSupplement(relationship, targetAuthor)
-          : authorRunOpen;
+          : authorRunOpen
+            || !isInSameReplyGroup(previous, container)
+            || (previousSupplement && isInSameReplyGroup(previous, container));
         if (!isDirectAuthorReply) continue;
         let item;
         try {
@@ -255,11 +265,29 @@
           continue;
         }
         seenPostIds.add(parsed.postId);
+        previousWasSupplement = true;
         authorReplyRecords.push(buildContinuationRecord(item, container));
       }
     }
 
     return { continuations: numberedRecords, authorReplies: authorReplyRecords };
+  }
+
+  // True when two posts sit in the same reply group: the lowest element holding both is the group's own
+  // wrapper (two levels above a post), not the list that holds all the groups.
+  function isInSameReplyGroup(/** @type {any} */ left, /** @type {any} */ right) {
+    if (!(left instanceof Element) || !(right instanceof Element)) return true;
+    /** @type {Element | null} */
+    let shared = left;
+    while (shared && !shared.contains(right)) shared = shared.parentElement;
+    if (!shared) return true;
+    return depthOf(shared) >= depthOf(right) - 2;
+  }
+
+  function depthOf(/** @type {Element} */ element) {
+    let depth = 0;
+    for (let node = element.parentElement; node; node = node.parentElement) depth += 1;
+    return depth;
   }
 
   function hasConversationBoundaryBetween(/** @type {any} */ left, /** @type {any} */ right) {

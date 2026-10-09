@@ -324,3 +324,21 @@ test("頁面沒有串文資料時，緊接在主貼文後面的作者貼文算�
   const capture = await content.captureCurrentThread(true);
   assert.deepEqual(capture.authorReplies.map((/** @type {any} */ item) => item.text), ["⚠️ 作者自己的補充"]);
 });
+
+test("留言區的巢狀：每組開頭的作者貼文是直接回覆主貼文（算補充），排在讀者之後的作者貼文是回覆讀者（不算）", async () => {
+  env.dom.reconfigure({ url: "https://www.threads.com/@sample/post/root001" });
+  const card = (/** @type {string} */ user, /** @type {string} */ id, /** @type {string} */ text) => `<div><div data-pressable-container="true">
+    <a href="/@${user}/post/${id}"><time datetime="2026-01-01T00:00:00.000Z">1 天</time></a><div dir="auto">${text}</div></div></div>`;
+  document.open();
+  document.write(`<!doctype html><html><body><div><div>
+    ${card("sample", "root001", "主貼文")}
+    <div class="replies">
+      <div class="group">${card("reader", "read001", "讀者留言")}${card("sample", "ansr001", "作者回覆讀者")}</div>
+      <div class="group">${card("sample", "supp001", "⚠️ 作者直接回覆自己的貼文")}${card("reader", "read002", "讀者回覆作者")}</div>
+      <div class="group">${card("reader", "read003", "另一則讀者留言")}</div>
+    </div>
+  </div></div></body></html>`);
+  document.close();
+  const capture = await content.captureCurrentThread(true);
+  assert.deepEqual(capture.authorReplies.map((/** @type {any} */ item) => item.text), ["⚠️ 作者直接回覆自己的貼文"]);
+});
