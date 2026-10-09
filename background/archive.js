@@ -114,6 +114,15 @@
 
     // The local saved index belongs to one data source; switching while a save is running could mix them.
     async function assertDataSourceChangeAllowed() {
+      // With no database set up yet, waiting items have nowhere to go (saves made before setup was finished);
+      // they are dropped so they cannot block the first setup.
+      if (!(await readConfig()).dataSourceId) {
+        await withStateLock(async () => {
+          const pending = await readState();
+          pending.queue = pending.queue.filter((item) => item.status !== "pending");
+          await writeState(pending);
+        });
+      }
       const state = await readState();
       if (isProcessing() || state.queue.some((item) => item.status === "pending" || item.status === "processing")) {
         throw new Error(S.t("還有文章正在保存，請等「等待中」歸零後再更換 Notion 整理庫"));

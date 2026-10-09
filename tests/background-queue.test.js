@@ -16,6 +16,8 @@ chromeMock.runtime.id = "extension-id";
 chromeMock.runtime.getURL = file => `chrome-extension://extension-id/${file}`;
 const PAGE_SENDER = { id: "extension-id", url: "chrome-extension://extension-id/pages/popup/popup.html" };
 const background = require("../background.js");
+// The tests below put items on the queue without setting Notion up; the setup check has its own tests.
+background.setSetupCheckForTests(async () => {});
 
 const STATE_KEY = "savourState";
 const CONFIG_KEY = "savourConfig";
@@ -1217,4 +1219,32 @@ test("網站上的內容腳本不能讀設定、改設定或匯出紀錄，只�
   const config = await background.handleMessage({ type: "GET_CONFIG" }, { id: "extension-id", tab: { id: 3 }, url: "chrome-extension://extension-id/pages/options/options.html" });
   assert.equal(typeof config.hasToken, "boolean");
   assert.equal("token" in config, false);
+});
+
+test("設定還沒完成（沒有 Token 或整理庫）時不加入佇列，並說明要先去設定", async () => {
+  background.setSetupCheckForTests(null);
+  try {
+    await resetStorage();
+    await assert.rejects(background.enqueueCaptures([rawPost()]), /請先到設定頁填入 Notion Token/);
+    await chromeMock.storage.session.set({ notionToken: "token" });
+    await assert.rejects(background.enqueueCaptures([rawPost()]), /請先到設定頁選擇或建立整理庫/);
+    assert.equal((await background.readState()).queue.length, 0);
+  } finally {
+    background.setSetupCheckForTests(async () => {});
+  }
+});
+
+test("還沒選整理庫時留下的等待項目，不會擋住第一次設定整理庫", async () => {
+  await resetStorage();
+  const capture = background.sanitizeCapture(rawPost());
+  const state = structuredClone(background.DEFAULT_STATE);
+  state.queue = [{ id: "waiting", capture, status: "pending", attempts: 0 }];
+  await background.writeState(state);
+  await chromeMock.storage.session.set({ notionToken: "token" });
+  const requests = [];
+  await withFetch(switchFetch(requests), () => background.handleMessage({
+    type: "SAVE_SETTINGS",
+    settings: { archiveTarget: SOURCE_B }
+  }, PAGE_SENDER));
+  assert.equal((await background.readState()).queue.some(item => item.id === "waiting"), false);
 });

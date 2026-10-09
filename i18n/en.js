@@ -267,6 +267,8 @@
   "偵測到長文附件，但無法確認全文已載入": "A long-text attachment was found, but it can't be confirmed that the full text loaded",
   "偵測到長文附件，但沒有取得附件文字": "A long-text attachment was found, but no attachment text was obtained",
   "尚未設定 Notion Token": "No Notion token is set",
+  "請先到設定頁填入 Notion Token，再開始保存": "Enter your Notion token on the settings page first, then start saving",
+  "請先到設定頁選擇或建立整理庫，再開始保存": "Choose or create a database on the settings page first, then start saving",
   "貼文容器與目前網址不一致，已取消保存": "Cancelled: the post container doesn't match the current URL",
   "貼文容器無法通過來源驗證，已取消保存": "Cancelled: the post container failed source verification",
   "Threads 頁面已切換，為避免混入其他貼文，本次保存已取消": "Cancelled: the Threads page changed, to avoid mixing in other posts",

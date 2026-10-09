@@ -29,6 +29,7 @@
    * @property {import("../types").Services["withStateLock"]} withStateLock
    * @property {import("../types").Services["readConfig"]} readConfig
    * @property {import("../types").Services["readToken"]} readToken
+   * @property {() => Promise<void>} [assertReadyToSave] throws when setup is unfinished
    * @property {import("../types").Services["ensureArchiveSchema"]} ensureArchiveSchema
    * @property {import("../types").Services["saveCaptureToNotion"]} saveCaptureToNotion
    * @property {import("../types").Services["appendSelectionToPage"]} appendSelectionToPage
@@ -58,6 +59,9 @@
       withStateLock,
       readConfig,
       readToken,
+      // Throws before anything is queued when setup is unfinished; a queue that cannot run would only block
+      // choosing the database later.
+      assertReadyToSave = async () => {},
       ensureArchiveSchema,
       saveCaptureToNotion,
       appendSelectionToPage,
@@ -154,6 +158,7 @@
     async function enqueueCaptures(rawCaptures, enqueueOptions = {}) {
       const captures = rawCaptures.map(sanitizeCapture).filter(item => item.text || item.sourceUrl);
       if (!captures.length) throw new Error(t("畫面中沒有可保存的文字或貼文網址"));
+      await assertReadyToSave();
       const result = await withStateLock(async () => {
         const state = await readState();
         const prospectiveCreates = prospectiveCreateCount(state, captures);
@@ -221,6 +226,7 @@
      * @returns {Promise<import("../types").EnqueueResult>}
      */
     async function enqueueSelectionAppend(rawCapture, rawTarget) {
+      await assertReadyToSave();
       const capture = sanitizeCapture(rawCapture);
       if (capture.captureType !== "selection" || !capture.text) throw new Error(t("請先選取想保存的文字"));
       const pageId = shared.extractNotionId(rawTarget?.pageId);

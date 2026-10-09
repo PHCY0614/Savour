@@ -196,6 +196,14 @@ const { appendSelectionToPage, saveCaptureToNotion } = NR.createNotionRepository
   mediaStage
 });
 
+// Saving needs a token and a database; without them the queue could never run and its waiting items would
+// block choosing the database later. Tests of the queue itself turn the check off.
+async function defaultSetupCheck() {
+  if (!(await readToken())) throw new Error(S.t("請先到設定頁填入 Notion Token，再開始保存"));
+  if (!(await readConfig()).dataSourceId) throw new Error(S.t("請先到設定頁選擇或建立整理庫，再開始保存"));
+}
+let setupCheck = defaultSetupCheck;
+
 const {
   enqueueCaptures,
   enqueueSelectionAppend,
@@ -213,6 +221,7 @@ const {
   withStateLock,
   readConfig,
   readToken,
+  assertReadyToSave: () => setupCheck(),
   ensureArchiveSchema,
   saveCaptureToNotion,
   appendSelectionToPage,
@@ -562,6 +571,9 @@ if (typeof module === "object" && module.exports) {
     processQueue,
     readState,
     sanitizeCapture,
+    setSetupCheckForTests(/** @type {(() => Promise<void>) | null} */ check) {
+      setupCheck = check ?? defaultSetupCheck;
+    },
     writeState
   };
 } else {
