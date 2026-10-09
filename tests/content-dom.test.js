@@ -193,6 +193,8 @@ test("目前完整串文的一次性擷取會依序加入同作者續文", async
     const capture = await content.captureCurrentThread(true);
     assert.deepEqual(capture.continuations.map(item => item.threadPosition), ["2/3", "3/3"]);
     assert.doesNotMatch(capture.reviewFlags.join(" "), /串文未完整/);
+    // A thread read completely from the page carries no "no thread data" warning, whatever data the page has.
+    assert.deepEqual(capture.captureNotes ?? [], []);
   } finally {
     globalThis.fetch = originalFetch;
   }

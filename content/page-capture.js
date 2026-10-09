@@ -118,10 +118,6 @@
         : [];
       ensureRouteUnchanged(routeAtStart);
       mergeStructuredRootEntry(root, relationshipEntries);
-      // After in-site navigation the page may only carry data for the previous URL.
-      if (includeContinuations && !relationshipEntries.length && S.parseThreadPosition(root.threadPosition)) {
-        root.captureNotes = [S.t("這頁沒有讀到串文結構資料，串文或作者補充可能不完整。若結果缺漏，請重新整理這頁後再保存一次。")];
-      }
       const relationshipByPostId = new Map(relationshipEntries.map((/** @type {any} */ entry) => [entry.postId, entry]));
       const domFollowupRecords = includeContinuations
         ? collectContinuationRecords(containers, rootContainer, root, {
@@ -142,6 +138,11 @@
       const orderedContinuations = S.orderThreadEntries(continuationCandidates, root.threadPosition);
       if (includeContinuations && S.parseThreadPosition(root.threadPosition) && !orderedContinuations.complete) {
         root.reviewFlags = S.normalizeReviewFlags([...(root.reviewFlags ?? []), "串文未完整"]);
+        // After in-site navigation the page may only carry data for the previous URL. Said only when parts
+        // are missing: a thread read completely from the page needs no warning.
+        if (!relationshipEntries.length) {
+          root.captureNotes = [S.t("這頁沒有讀到串文結構資料，串文或作者補充可能不完整。若結果缺漏，請重新整理這頁後再保存一次。")];
+        }
       }
 
       const captureGuard = createManualCaptureGuard(current.postId, rootContainer);
