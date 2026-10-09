@@ -112,6 +112,8 @@ Savour 即將上架 Chrome 線上應用程式商店。想先試用的話，可�
 
 ## 隱私與安全
 
+Savour 是獨立的開源工具，與 Notion、Threads、噗浪、X、Instagram、Facebook、LinkedIn、YouTube 及其營運公司沒有關聯，各名稱與商標屬於其所有人。
+
 Savour 沒有分析追蹤，內容由瀏覽器直接保存到你選擇的 Notion 整理庫。
 
 - [隱私權政策與權限說明](PRIVACY.md)

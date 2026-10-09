@@ -112,6 +112,8 @@ Clearing recent records only clears the list shown in the extension. It does not
 
 ## Privacy and security
 
+Savour is an independent open-source tool, not affiliated with Notion, Threads, Plurk, X, Instagram, Facebook, LinkedIn, YouTube or their owners. All names and trademarks belong to their respective owners.
+
 Savour has no analytics tracking. Content is saved directly from your browser to the Notion database you choose.
 
 - [Privacy policy and permissions](PRIVACY.en.md)

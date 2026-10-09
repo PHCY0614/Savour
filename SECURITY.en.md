@@ -15,7 +15,7 @@
 The extension can only reach the pages and databases **you have explicitly shared with the Integration** in Notion. It will:
 
 - Add pages to the database you chose, and set each page's icon to the source site's icon.
-- When connecting or creating a database, add any missing columns; on first connection, hide the three internal columns (Capture key, Post ID, Original range) in table, list and gallery views. It never deletes or renames a column.
+- When connecting or creating a database, add any missing columns; on first connection, hide the three internal columns (Capture key, Post ID, Original range) in table, list and gallery views; for a newly created database, also put the columns in reading order (the name first) in those views. It never deletes or renames a column.
 - When a thread has missing parts, **append** the missing parts after the original text of the existing page, without touching anything else.
 - When you add selected text to a page, append it to the end of that page, separated by a divider.
 - When you press "Update Notion page", delete the blocks the page records as the original text, replace them with the latest content, and update the title, author and other columns. Notes you wrote above or below the original text are not affected. If the position of the original text cannot be found, nothing is deleted and the new content is placed at the top.
