@@ -41,6 +41,8 @@ Works only when you click save
 Content goes straight from your browser to your own Notion, with no server in between and no tracking
 Requires a Notion account; the settings page walks you through connecting it once
 
+Savour is an independent open-source tool, not affiliated with Notion, Threads, Plurk, X, Instagram, Facebook, LinkedIn, YouTube or their owners. All names and trademarks belong to their respective owners.
+
 ## 正體中文
 
 **簡短說明**
@@ -80,9 +82,15 @@ Threads、噗浪、X、Instagram、Facebook、LinkedIn 貼文與 YouTube 影片
 內容由你的瀏覽器直接送到你自己的 Notion，沒有中間伺服器，也沒有追蹤
 需要 Notion 帳號；第一次使用時，設定頁有教學帶你完成連線
 
+Savour 是獨立的開源工具，與 Notion、Threads、噗浪、X、Instagram、Facebook、LinkedIn、YouTube 及其營運公司沒有關聯，各名稱與商標屬於其所有人。
+
 ## Developer Dashboard 欄位（英文，貼到後台）
 
 以下欄位只給審核人員看，不會公開顯示。權限理由與 `PRIVACY.en.md` 的 Permissions 表保持一致。
+
+### Category
+
+Productivity › Workflow & Planning
 
 ### Single purpose
 
@@ -112,7 +120,7 @@ Check:
 
 Certify all three: data is not sold to third parties; not used or transferred for purposes unrelated to the single purpose; not used or transferred to determine creditworthiness or for lending.
 
-Privacy policy URL: the public address of `PRIVACY.en.md` (fill in once the repository is public).
+Privacy policy URL: https://github.com/PHCY0614/Savour/blob/main/PRIVACY.en.md
 
 ### Instructions for the reviewer
 
