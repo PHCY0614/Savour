@@ -153,6 +153,8 @@
       media: article ? article.media : sanitizeMedia(raw?.media),
       links: S.normalizeLinks(raw?.links),
       linkCards: S.normalizeLinks(raw?.linkCards, 10),
+      // Embedded YouTube / Vimeo players, as watch-page addresses; Notion plays them.
+      videos: [...new Set((Array.isArray(raw?.videos) ? raw.videos : []).map((/** @type {any} */ value) => S.embeddedVideoWatchUrl(value)).filter(Boolean))].slice(0, 5),
       quotedPosts,
       quotes: quotedPosts.map((/** @type {any} */ item) => ({
         mediaId: item.mediaId,

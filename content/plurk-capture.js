@@ -85,6 +85,13 @@
         .map(item => ({ type: "image", url: item.url, thumbnailUrl: item.thumbnail, alt: "", width: 0, height: 0 }));
     }
 
+    // YouTube and Vimeo players the plurk page draws in place of a pasted video link.
+    function holderVideos(/** @type {Element} */ holder) {
+      return [...new Set([...holder.querySelectorAll("iframe[src]")]
+        .map(frame => S.embeddedVideoWatchUrl(frame.getAttribute("src")))
+        .filter(Boolean))];
+    }
+
     function holderPasteLinks(/** @type {Element} */ holder) {
       return [...new Set([...holder.querySelectorAll("a.plurkpaste[href], a[href*='paste.plurk.com/show/']")]
         .map(anchor => anchor.href)
@@ -139,6 +146,7 @@
         links,
         linkCards: holderLinkCards(holder, links),
         media: holderMedia(holder),
+        videos: holderVideos(holder),
         longTextAttachments: attachments,
         reviewFlags: failures.length ? ["正文疑似遺漏"] : [],
         pasteFailures: failures
@@ -196,7 +204,7 @@
           quotedPosts: [],
           captureValidation: validation
         });
-        if (entry.text || entry.media.length || entry.longTextAttachments.length) authorReplies.push(entry);
+        if (entry.text || entry.media.length || entry.videos.length || entry.longTextAttachments.length) authorReplies.push(entry);
       }
 
       const pasteFailures = [root, ...authorReplies].flatMap(entry => entry.pasteFailures ?? []);

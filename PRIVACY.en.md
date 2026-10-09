@@ -12,7 +12,7 @@ Only when you press "Save current page", the keyboard shortcut or the right-clic
 - Post images
 - Links in the text and the addresses of link preview cards
 - The author's account name, publish time, Threads topic and post address
-- Plurk: the plurk's text, images, links, an attached Plurk Paste, and the author's own follow-ups in the replies
+- Plurk: the plurk's text, images, links, the address of an embedded YouTube or Vimeo video, an attached Plurk Paste, and the author's own follow-ups in the replies
 - X: the post's text, images, links, the address of a quoted post, and the author's own thread directly below it
 - Instagram: the post caption, author, publish time and images (for videos, only the cover image)
 - YouTube: the video's title, channel, publish date, length and description (read from the video data built into the page; when needed, the video's YouTube page is read again, the same as reloading it yourself)
@@ -86,7 +86,7 @@ The extension's use of user data complies with the [Chrome Web Store User Data P
 
 If this policy changes, this page is updated along with the "Last updated" date below; changes affecting how data is used are also noted in the extension's release notes.
 
-Last updated: 2026-10-08
+Last updated: 2026-10-09
 
 ## Contact
 

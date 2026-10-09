@@ -135,3 +135,30 @@ test("從噗浪頁面到 Notion 頁面：Paste 全文緊接在 Paste 連結下�
   assert.ok(link >= 0 && paste === link + 1, `Paste 全文應在連結正下方：${JSON.stringify(lines)}`);
   assert.ok(lines.findIndex(line => line.includes("#測試")) > paste, "標籤等後續文字應在 Paste 全文之後");
 });
+
+test("噗文裡嵌入的 YouTube / Vimeo 影片會以 Notion 影片區塊保存（YouTube 與其他影片網站的播放器都轉成觀看頁網址）", async () => {
+  const html = fixture("plurk-post").replace(
+    "<span class=\"hashtag\">",
+    `<iframe class="ogrendered" width="500" height="320" src="https://www.youtube.com/embed/Sample12345?feature=oembed"></iframe><iframe src="https://player.vimeo.com/video/123456789"></iframe><iframe src="https://ads.example.test/frame"></iframe><span class="hashtag">`
+  );
+  const env = installDom(html, { url: PLURK_URL });
+  try {
+    const capture = createPlurkCapture({ shared: S, readPaste: async () => pasteFromFixture() });
+    const result = await capture.captureCurrentPlurk();
+    assert.deepEqual(result.videos, ["https://www.youtube.com/watch?v=Sample12345", "https://vimeo.com/123456789"]);
+    const normalized = M.normalizeCapture(result, { sourceType: "page" });
+    assert.deepEqual(normalized.videos, result.videos);
+    const videoUrls = N.buildPageChildren(normalized).filter(block => block.type === "video").map(block => block.video.external.url);
+    assert.deepEqual(videoUrls, result.videos);
+  } finally {
+    env.restore();
+  }
+});
+
+test("嵌入影片網址只認 https 的 YouTube / Vimeo，其他網站與不是影片的網址不算", () => {
+  assert.equal(S.embeddedVideoWatchUrl("https://www.youtube-nocookie.com/embed/Sample12345"), "https://www.youtube.com/watch?v=Sample12345");
+  assert.equal(S.embeddedVideoWatchUrl("http://www.youtube.com/embed/Sample12345"), "");
+  assert.equal(S.embeddedVideoWatchUrl("https://evil.example/embed/Sample12345"), "");
+  assert.equal(S.embeddedVideoWatchUrl("https://www.youtube.com/@channel"), "");
+  assert.equal(S.embeddedVideoWatchUrl("javascript:alert(1)"), "");
+});

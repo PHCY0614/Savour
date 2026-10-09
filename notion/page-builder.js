@@ -96,6 +96,13 @@
       };
     }
 
+    function addVideoBlocks(/** @type {any} */ children, /** @type {any} */ videos) {
+      for (const value of videos ?? []) {
+        const video = videoBlock(value);
+        if (video) children.push(video);
+      }
+    }
+
     function addLinkCards(/** @type {any} */ children, /** @type {any} */ linkCards) {
       for (const card of linkCards ?? []) {
         const url = shared.webLinkUrl(card?.url);
@@ -436,6 +443,7 @@
       if (around.tail) children.push(...paragraphBlocks(around.tail, capture.links));
       appendThreadPosition(children, capture.threadPosition, mainStart);
       addMediaBlocks(children, capture.media);
+      addVideoBlocks(children, capture.videos);
       addLinkCards(children, capture.linkCards);
       addQuotedPostLinks(children, capture.quotedPosts);
       // A web page without a readable article keeps a preview card of the page itself.
@@ -443,7 +451,7 @@
         ? shared.webLinkUrl(capture.sourceUrl)
         : "";
       if (pageBookmark) children.push(bookmarkBlock(pageBookmark));
-      if (!mainBlocks.length && !capture.longTextAttachments?.length && !capture.media?.length && !capture.quotedPosts?.length && !capture.linkCards?.length && !pageBookmark) {
+      if (!mainBlocks.length && !capture.longTextAttachments?.length && !capture.media?.length && !capture.videos?.length && !capture.quotedPosts?.length && !capture.linkCards?.length && !pageBookmark) {
         children.push(paragraph(shared.t("此貼文沒有可擷取的內容。")));
       }
       addCaptureWarnings(children, capture.mediaDiagnostics);
@@ -470,9 +478,10 @@
         if (around.tail) children.push(...paragraphBlocks(around.tail, continuation.links));
         appendThreadPosition(children, continuation.threadPosition, continuationStart);
         addMediaBlocks(children, continuation.media);
+        addVideoBlocks(children, continuation.videos);
         addLinkCards(children, continuation.linkCards);
         addQuotedPostLinks(children, continuation.quotedPosts);
-        if (!continuationBlocks.length && !continuation.longTextAttachments?.length && !continuation.media?.length && !continuation.quotedPosts?.length && !continuation.linkCards?.length) {
+        if (!continuationBlocks.length && !continuation.longTextAttachments?.length && !continuation.media?.length && !continuation.videos?.length && !continuation.quotedPosts?.length && !continuation.linkCards?.length) {
           children.push(paragraph(shared.t("此則回覆沒有可擷取的內容。")));
         }
         addCaptureWarnings(children, continuation.mediaDiagnostics);

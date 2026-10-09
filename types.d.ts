@@ -58,6 +58,8 @@ export interface CaptureEntry {
   links: LinkRef[];
   /** Link preview cards, at most 10. */
   linkCards: LinkRef[];
+  /** Watch-page addresses of YouTube / Vimeo players embedded in the post, at most 5. */
+  videos: string[];
   quotedPosts: QuotedPost[];
   sourceType: SourceType;
   completeness: Completeness;
