@@ -62,19 +62,17 @@
     };
   }
 
-  // Embedded video addresses (watch pages), each with where it sat in the text (a character offset, or -1 when unknown).
-  function sanitizeVideos(/** @type {any} */ raw) {
-    const videos = /** @type {string[]} */ ([]);
-    const videoOffsets = /** @type {number[]} */ ([]);
-    const urls = Array.isArray(raw?.videos) ? raw.videos : [];
-    urls.forEach((/** @type {any} */ value, /** @type {number} */ index) => {
-      const url = S.embeddedVideoWatchUrl(value);
-      if (!url || videos.includes(url) || videos.length >= 5) return;
-      const offset = Number(raw?.videoOffsets?.[index]);
-      videos.push(url);
-      videoOffsets.push(Number.isInteger(offset) && offset >= 0 ? offset : -1);
-    });
-    return { videos, videoOffsets };
+  // Embedded videos as watch-page addresses, at most 5 and each once, with where they sat in the text.
+  function sanitizeVideos(/** @type {any} */ items) {
+    const seen = new Set();
+    const videos = [];
+    for (const item of Array.isArray(items) ? items : []) {
+      const url = S.embeddedVideoWatchUrl(item?.url);
+      if (!url || seen.has(url) || videos.length >= 5) continue;
+      seen.add(url);
+      videos.push({ url, ...S.textOffset(item) });
+    }
+    return videos;
   }
 
   function sanitizeMedia(/** @type {any} */ items) {
@@ -88,7 +86,8 @@
       altText: "",
       width: Math.max(0, Number(item?.width) || 0),
       height: Math.max(0, Number(item?.height) || 0),
-      notionFileId: String(item?.notionFileId ?? "")
+      notionFileId: String(item?.notionFileId ?? ""),
+      ...S.textOffset(item)
     })).filter((/** @type {any} */ item) => {
       if (!/^https:\/\//i.test(item.url)) return false;
       let key;
@@ -169,7 +168,7 @@
       links: S.normalizeLinks(raw?.links),
       linkCards: S.normalizeLinks(raw?.linkCards, 10),
       // Embedded YouTube / Vimeo players, as watch-page addresses; Notion plays them.
-      ...sanitizeVideos(raw),
+      videos: sanitizeVideos(raw?.videos),
       quotedPosts,
       quotes: quotedPosts.map((/** @type {any} */ item) => ({
         mediaId: item.mediaId,

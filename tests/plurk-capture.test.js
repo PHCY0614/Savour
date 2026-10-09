@@ -146,16 +146,12 @@ test("噗文裡嵌入的 YouTube / Vimeo 影片會以 Notion 影片區塊保存�
   try {
     const capture = createPlurkCapture({ shared: S, readPaste: async () => pasteFromFixture() });
     const result = await capture.captureCurrentPlurk();
-    assert.deepEqual(result.videos, ["https://www.youtube.com/watch?v=Sample12345", "https://vimeo.com/123456789"]);
+    const urls = ["https://www.youtube.com/watch?v=Sample12345", "https://vimeo.com/123456789"];
+    assert.deepEqual(result.videos.map(/** @type {any} */ video => video.url), urls);
     const normalized = M.normalizeCapture(result, { sourceType: "page" });
-    assert.deepEqual(normalized.videos, result.videos);
+    assert.deepEqual(normalized.videos.map(video => video.url), urls);
     const videoUrls = N.buildPageChildren(normalized).filter(block => block.type === "video").map(block => block.video.external.url);
-    assert.deepEqual(videoUrls, result.videos);
-    // The video stays where the page shows it: after the text, before the hashtags that follow it.
-    const kinds = N.buildPageChildren(normalized).map(block => (block.type === "video" ? "video" : (block[block.type]?.rich_text ?? []).map(/** @type {any} */ item => item.text.content).join("")));
-    const firstVideo = kinds.indexOf("video");
-    const tag = kinds.findIndex(line => line.includes("#測試"));
-    assert.ok(firstVideo > 0 && tag > firstVideo, `影片應在標籤之前：${JSON.stringify(kinds)}`);
+    assert.deepEqual(videoUrls, urls);
   } finally {
     env.restore();
   }
@@ -167,4 +163,45 @@ test("嵌入影片網址只認 https 的 YouTube / Vimeo，其他網站與不是
   assert.equal(S.embeddedVideoWatchUrl("https://evil.example/embed/Sample12345"), "");
   assert.equal(S.embeddedVideoWatchUrl("https://www.youtube.com/@channel"), "");
   assert.equal(S.embeddedVideoWatchUrl("javascript:alert(1)"), "");
+});
+
+test("噗文的圖片、預覽卡片與影片都放在頁面上顯示的位置：前面的文字、它、後面的文字", async () => {
+  // No Paste here: with one, the Paste's own place in the text decides the order.
+  const html = fixture("plurk-post").replace(/<a href="https:\/\/paste\.plurk\.com[^>]*>[^<]*<\/a>/, "").replace(
+    "<span class=\"hashtag\">",
+    `<iframe src="https://www.youtube.com/embed/Sample12345"></iframe><span class="hashtag">`
+  );
+  const env = installDom(html, { url: PLURK_URL });
+  try {
+    const capture = createPlurkCapture({ shared: S, readPaste: async () => pasteFromFixture() });
+    const normalized = M.normalizeCapture(await capture.captureCurrentPlurk(), { sourceType: "page" });
+    // Pictures only become blocks once they are in Notion (or marked to link to their original).
+    for (const item of normalized.media) item.external = true;
+    const order = N.buildPageChildren(normalized).map(block => {
+      if (block.type === "paragraph") return (block.paragraph.rich_text ?? []).map(/** @type {any} */ item => item.text.content).join("");
+      return block.type;
+    });
+    const at = (/** @type {RegExp | string} */ match) => order.findIndex(item => (typeof match === "string" ? item === match : match.test(item)));
+    assert.ok(at(/第二段/) < at("image"), `圖片在第二段文字之後：${JSON.stringify(order)}`);
+    assert.ok(at("image") < at(/參考：/), `圖片在「參考」之前：${JSON.stringify(order)}`);
+    assert.ok(at(/參考：/) < at("bookmark"), `預覽卡片在「參考」之後：${JSON.stringify(order)}`);
+    assert.ok(at("bookmark") < at("video"), `影片在預覽卡片之後：${JSON.stringify(order)}`);
+    assert.ok(at("video") < at(/#測試/), `標籤在影片之後：${JSON.stringify(order)}`);
+  } finally {
+    env.restore();
+  }
+});
+
+test("沒有位置資訊的圖片、影片與預覽卡片（其他平台或舊紀錄）依序接在文字後面", () => {
+  const blocks = N.buildPageChildren(/** @type {any} */ ({
+    platform: "plurk",
+    captureType: "post",
+    text: "正文",
+    links: [],
+    longTextAttachments: [],
+    media: [{ type: "image", url: "https://images.plurk.com/a.jpg", external: true }],
+    videos: [{ url: "https://www.youtube.com/watch?v=Sample12345" }],
+    linkCards: [{ text: "新聞", url: "https://news.example.test/story" }]
+  }));
+  assert.deepEqual(blocks.map(block => block.type), ["paragraph", "image", "video", "bookmark"]);
 });

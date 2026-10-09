@@ -12,7 +12,7 @@ export type SourceType = "api" | "page" | "selection" | "manual";
 export type Completeness = "complete" | "partial" | "user-confirmed";
 
 /** One picture or video found in a post or article. Only https URLs survive sanitizing. */
-export interface MediaItem {
+export interface MediaItem extends TextPlace {
   type: "image" | "video";
   /** Same value as `type`, kept for older code. */
   kind: "image" | "video";
@@ -26,8 +26,21 @@ export interface MediaItem {
   notionFileId: string;
 }
 
-export interface LinkRef {
+/** A picture, link card or video that sat inside a post's text; without it, it follows the text. */
+export interface TextPlace {
+  /** Character offset in the text. */
+  at?: number;
+  /** Place among the post's attachments, for those at the same offset. */
+  order?: number;
+}
+
+export interface LinkRef extends TextPlace {
   text: string;
+  url: string;
+}
+
+/** A YouTube or Vimeo player embedded in a post, as its watch-page address. */
+export interface VideoRef extends TextPlace {
   url: string;
 }
 
@@ -58,10 +71,8 @@ export interface CaptureEntry {
   links: LinkRef[];
   /** Link preview cards, at most 10. */
   linkCards: LinkRef[];
-  /** Watch-page addresses of YouTube / Vimeo players embedded in the post, at most 5. */
-  videos: string[];
-  /** Where each of `videos` sat in `text` (character offset), or -1 when unknown; same length as `videos`. */
-  videoOffsets: number[];
+  /** YouTube / Vimeo players embedded in the post, at most 5. */
+  videos: VideoRef[];
   quotedPosts: QuotedPost[];
   sourceType: SourceType;
   completeness: Completeness;

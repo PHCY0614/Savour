@@ -96,47 +96,78 @@
       };
     }
 
-    function addVideoBlocks(/** @type {any} */ children, /** @type {any} */ videos) {
-      for (const value of videos ?? []) {
-        const video = videoBlock(value);
-        if (video) children.push(video);
+    // ---- A post's body: its text and what came with it ----
+
+    // The things a post carries besides text, in the order they follow the text unless the capture says where
+    // in the text they sat (item.at, a character offset).
+    const ATTACHMENT_KINDS = [
+      { key: "media", block: (/** @type {any} */ item) => imageBlock(item) },
+      { key: "videos", block: (/** @type {any} */ item) => videoBlock(item?.url) },
+      {
+        key: "linkCards",
+        block: (/** @type {any} */ item) => {
+          const url = shared.webLinkUrl(item?.url);
+          return url ? bookmarkBlock(url) : null;
+        }
       }
+    ];
+
+    // Attachments with a known place in the text, as { at, block, item } by place.
+    function placedAttachments(/** @type {any} */ entry) {
+      const placed = [];
+      for (const { key, block } of ATTACHMENT_KINDS) {
+        for (const item of entry[key] ?? []) {
+          const made = Number.isInteger(item?.at) && item.at >= 0 ? block(item) : null;
+          if (made) placed.push({ at: item.at, order: item.order ?? 0, block: made, item });
+        }
+      }
+      return placed.sort((left, right) => left.at - right.at || left.order - right.order);
     }
 
-    // The text with its videos put where they sat: text before, the video, text after. A video with no known
-    // place goes after the text, which is also where every video goes when the entry carries a Plurk Paste
-    // (the Paste's own split of the text then takes the place of this one).
-    function textWithVideos(/** @type {any} */ children, /** @type {any} */ entry) {
+    // The text cut at each placed attachment: text before, the attachment, text after.
+    function addTextWithAttachments(/** @type {any} */ children, /** @type {any} */ entry, /** @type {any[]} */ placed) {
       const text = String(entry.text ?? "");
-      const videos = entry.videos ?? [];
-      const placed = videos
-        .map((/** @type {string} */ url, /** @type {number} */ index) => ({ url, at: Number(entry.videoOffsets?.[index]) }))
-        .filter((/** @type {any} */ item) => Number.isInteger(item.at) && item.at >= 0)
-        .sort((/** @type {any} */ left, /** @type {any} */ right) => left.at - right.at);
-      const blocks = /** @type {any[]} */ ([]);
-      let from = 0;
-      for (const item of placed) {
-        const at = Math.min(item.at, text.length);
-        const part = text.slice(from, at).trim();
-        if (part) blocks.push(...paragraphBlocks(part, entry.links));
-        const video = videoBlock(item.url);
-        if (video) blocks.push(video);
-        from = Math.max(from, at);
-      }
-      const rest = text.slice(from).trim();
-      if (rest) blocks.push(...paragraphBlocks(rest, entry.links));
-      children.push(...blocks);
-      return {
-        placedUrls: new Set(placed.map((/** @type {any} */ item) => item.url)),
-        textBlocks: blocks.filter((/** @type {any} */ block) => block.type !== "video")
+      const addText = (/** @type {string} */ part) => {
+        if (part.trim()) children.push(...paragraphBlocks(part.trim(), entry.links));
       };
+      let from = 0;
+      for (const { at, block } of placed) {
+        const end = Math.max(from, Math.min(at, text.length));
+        addText(text.slice(from, end));
+        children.push(block);
+        from = end;
+      }
+      addText(text.slice(from));
     }
 
-    function addLinkCards(/** @type {any} */ children, /** @type {any} */ linkCards) {
-      for (const card of linkCards ?? []) {
-        const url = shared.webLinkUrl(card?.url);
-        if (url) children.push(bookmarkBlock(url));
+    // Text, then the attachments that have no place in it. A Plurk Paste decides the order itself (its link
+    // marks where the long text goes), so with one every attachment follows the text.
+    function addEntryBody(/** @type {any} */ children, /** @type {any} */ entry) {
+      const start = children.length;
+      const hasPaste = (entry.longTextAttachments ?? []).some((/** @type {any} */ item) => item?.source === "plurk_paste");
+      const placed = hasPaste ? [] : placedAttachments(entry);
+      if (placed.length) {
+        addTextWithAttachments(children, entry, placed);
+        addLongTextBlocks(children, entry.longTextAttachments, entry.links);
+      } else {
+        const around = splitAroundPaste(entry.text, entry.longTextAttachments, entry.links);
+        children.push(...paragraphBlocks(around.head, entry.links));
+        addLongTextBlocks(children, entry.longTextAttachments, entry.links);
+        if (around.tail) children.push(...paragraphBlocks(around.tail, entry.links));
       }
+      appendThreadPosition(children, entry.threadPosition, start);
+      const placedItems = new Set(placed.map(item => item.item));
+      for (const { key, block } of ATTACHMENT_KINDS) {
+        for (const item of entry[key] ?? []) {
+          const made = placedItems.has(item) ? null : block(item);
+          if (made) children.push(made);
+        }
+      }
+    }
+
+    // True when an entry has anything to show besides what its quoted posts add.
+    function hasEntryContent(/** @type {any} */ entry) {
+      return Boolean(shared.cleanText(entry.text) || entry.longTextAttachments?.length || ATTACHMENT_KINDS.some(({ key }) => entry[key]?.length));
     }
 
     function blankParagraph() {
@@ -432,12 +463,6 @@
       return chunks;
     }
 
-    function addMediaBlocks(/** @type {any} */ children, /** @type {any} */ media) {
-      const blocks = (media ?? []).map((/** @type {any} */ item) => imageBlock(item)).filter(Boolean);
-      if (!blocks.length) return;
-      children.push(...blocks);
-    }
-
     function addQuotedPostLinks(/** @type {any} */ children, /** @type {any} */ quotedPosts) {
       const seen = new Set();
       const links = [];
@@ -464,33 +489,14 @@
         addCaptureWarnings(children, capture.mediaDiagnostics);
         return children;
       }
-      const mainStart = children.length;
-      const hasPaste = (capture.longTextAttachments ?? []).some((/** @type {any} */ item) => item?.source === "plurk_paste");
-      let mainBlocks;
-      let placedVideos = new Set();
-      if (capture.videos?.length && !hasPaste) {
-        const result = textWithVideos(children, capture);
-        mainBlocks = result.textBlocks;
-        placedVideos = result.placedUrls;
-        addLongTextBlocks(children, capture.longTextAttachments, capture.links);
-      } else {
-        const around = splitAroundPaste(capture.text, capture.longTextAttachments, capture.links);
-        mainBlocks = paragraphBlocks(around.head, capture.links);
-        children.push(...mainBlocks);
-        addLongTextBlocks(children, capture.longTextAttachments, capture.links);
-        if (around.tail) children.push(...paragraphBlocks(around.tail, capture.links));
-      }
-      appendThreadPosition(children, capture.threadPosition, mainStart);
-      addMediaBlocks(children, capture.media);
-      addVideoBlocks(children, (capture.videos ?? []).filter((/** @type {string} */ url) => !placedVideos.has(url)));
-      addLinkCards(children, capture.linkCards);
+      addEntryBody(children, capture);
       addQuotedPostLinks(children, capture.quotedPosts);
       // A web page without a readable article keeps a preview card of the page itself.
       const pageBookmark = capture.platform === "web" && capture.captureType !== "selection"
         ? shared.webLinkUrl(capture.sourceUrl)
         : "";
       if (pageBookmark) children.push(bookmarkBlock(pageBookmark));
-      if (!mainBlocks.length && !capture.longTextAttachments?.length && !capture.media?.length && !capture.videos?.length && !capture.quotedPosts?.length && !capture.linkCards?.length && !pageBookmark) {
+      if (!hasEntryContent(capture) && !capture.quotedPosts?.length && !pageBookmark) {
         children.push(paragraph(shared.t("此貼文沒有可擷取的內容。")));
       }
       addCaptureWarnings(children, capture.mediaDiagnostics);
@@ -504,33 +510,14 @@
 
     // Each continuation starts with a divider, so the same blocks can be appended to an existing page.
     function buildContinuationBlocks(/** @type {any} */ continuations) {
-      const children = [];
+      const children = /** @type {any[]} */ ([]);
       for (const continuation of continuations ?? []) {
         children.push(blankParagraph());
         children.push(divider());
         children.push(blankParagraph());
-        const continuationStart = children.length;
-        const hasPaste = (continuation.longTextAttachments ?? []).some((/** @type {any} */ item) => item?.source === "plurk_paste");
-        let continuationBlocks;
-        let placedVideos = new Set();
-        if (continuation.videos?.length && !hasPaste) {
-          const result = textWithVideos(children, continuation);
-          continuationBlocks = result.textBlocks;
-          placedVideos = result.placedUrls;
-          addLongTextBlocks(children, continuation.longTextAttachments, continuation.links);
-        } else {
-          const around = splitAroundPaste(continuation.text, continuation.longTextAttachments, continuation.links);
-          continuationBlocks = paragraphBlocks(around.head, continuation.links);
-          children.push(...continuationBlocks);
-          addLongTextBlocks(children, continuation.longTextAttachments, continuation.links);
-          if (around.tail) children.push(...paragraphBlocks(around.tail, continuation.links));
-        }
-        appendThreadPosition(children, continuation.threadPosition, continuationStart);
-        addMediaBlocks(children, continuation.media);
-        addVideoBlocks(children, (continuation.videos ?? []).filter((/** @type {string} */ url) => !placedVideos.has(url)));
-        addLinkCards(children, continuation.linkCards);
+        addEntryBody(children, continuation);
         addQuotedPostLinks(children, continuation.quotedPosts);
-        if (!continuationBlocks.length && !continuation.longTextAttachments?.length && !continuation.media?.length && !continuation.videos?.length && !continuation.quotedPosts?.length && !continuation.linkCards?.length) {
+        if (!hasEntryContent(continuation) && !continuation.quotedPosts?.length) {
           children.push(paragraph(shared.t("此則回覆沒有可擷取的內容。")));
         }
         addCaptureWarnings(children, continuation.mediaDiagnostics);

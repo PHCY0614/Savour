@@ -43,10 +43,10 @@
       }
     }
 
-    // Plain text of a text_holder: <br> become line breaks; emoticons, uploaded-image thumbnails
-    // and link-preview cards are left out (they are saved as images / bookmarks instead).
-    // `videoMarks`, when given, receives { url, at } for each embedded video: the length of the cleaned text before it.
-    function holderText(/** @type {Element} */ holder, /** @type {any[] | null} */ videoMarks = null) {
+    // Plain text of a text_holder: <br> become line breaks; emoticons and everything saved as its own block
+    // (uploaded-image thumbnails, link-preview cards, video players) are left out. Each of those is noted in
+    // `marks` with where it sat: the length of the cleaned text before it, and its order among such elements.
+    function holderText(/** @type {Element} */ holder, /** @type {Map<Element, { at: number, order: number }>} */ marks = new Map()) {
       let text = "";
       const walk = (/** @type {Element} */ node) => {
         for (const child of node.childNodes) {
@@ -55,13 +55,11 @@
           } else if (child.nodeName === "BR") {
             text += "\n";
           } else if (child instanceof Element) {
-            if (videoMarks && child.matches("iframe[src]")) {
-              const url = S.embeddedVideoWatchUrl(child.getAttribute("src"));
-              if (url) videoMarks.push({ url, at: S.cleanText(text).length });
+            if (child.matches("img") && isEmoticon(child)) continue;
+            if (child.matches("a.pictureservices, a.meta, iframe")) {
+              marks.set(child, { at: S.cleanText(text).length, order: marks.size });
               continue;
             }
-            if (child.matches("img") && isEmoticon(child)) continue;
-            if (child.matches("a.pictureservices, a.meta")) continue;
             walk(child);
           }
         }
@@ -76,19 +74,34 @@
         .map(anchor => ({ text: S.cleanText(anchor.textContent), url: anchor.href })));
     }
 
-    function holderLinkCards(/** @type {Element} */ holder, /** @type {any} */ links) {
+    // The three readers below add `where(element)`: the element's place in the text, when it has one.
+    function holderLinkCards(/** @type {Element} */ holder, /** @type {any} */ links, /** @type {(element: Element) => any} */ where) {
       const inline = new Set(links.map((/** @type {any} */ link) => link.url));
       return S.normalizeLinks([...holder.querySelectorAll("a.meta[href]")]
-        .map(anchor => ({ text: S.cleanText(anchor.textContent), url: anchor.href }))
+        .map(anchor => ({ text: S.cleanText(anchor.textContent), url: anchor.href, ...where(anchor) }))
         .filter(card => !inline.has(card.url)), 10);
     }
 
-    function holderMedia(/** @type {Element} */ holder) {
+    function holderMedia(/** @type {Element} */ holder, /** @type {(element: Element) => any} */ where) {
       const seen = new Set();
       return [...holder.querySelectorAll("a.pictureservices[href]")]
-        .map(anchor => ({ url: anchor.href, thumbnail: anchor.querySelector("img")?.src ?? "" }))
-        .filter(item => /^https:\/\//i.test(item.url) && !seen.has(item.url) && seen.add(item.url))
-        .map(item => ({ type: "image", url: item.url, thumbnailUrl: item.thumbnail, alt: "", width: 0, height: 0 }));
+        .filter(anchor => /^https:\/\//i.test(anchor.href) && !seen.has(anchor.href) && seen.add(anchor.href))
+        .map(anchor => ({
+          type: "image",
+          url: anchor.href,
+          thumbnailUrl: anchor.querySelector("img")?.src ?? "",
+          alt: "",
+          width: 0,
+          height: 0,
+          ...where(anchor)
+        }));
+    }
+
+    // YouTube and Vimeo players the page draws in place of a pasted video link.
+    function holderVideos(/** @type {Element} */ holder, /** @type {(element: Element) => any} */ where) {
+      return [...holder.querySelectorAll("iframe[src]")]
+        .map(frame => ({ url: S.embeddedVideoWatchUrl(frame.getAttribute("src")), ...where(frame) }))
+        .filter(video => video.url);
     }
 
     function holderPasteLinks(/** @type {Element} */ holder) {
@@ -139,17 +152,19 @@
     async function buildEntry(/** @type {Element} */ holder, /** @type {any} */ base) {
       const links = holderLinks(holder);
       const { attachments, failures } = await pasteAttachments(holder);
-      // YouTube and Vimeo players the page draws in place of a pasted video link, with where they sit in the text.
-      const videoMarks = /** @type {any[]} */ ([]);
-      const text = holderText(holder, videoMarks);
+      const marks = new Map();
+      const text = holderText(holder, marks);
+      const where = (/** @type {Element} */ element) => {
+        const mark = marks.get(element);
+        return mark ? { at: Math.min(mark.at, text.length), order: mark.order } : {};
+      };
       return {
         ...base,
         text,
         links,
-        linkCards: holderLinkCards(holder, links),
-        media: holderMedia(holder),
-        videos: videoMarks.map(mark => mark.url),
-        videoOffsets: videoMarks.map(mark => Math.min(mark.at, text.length)),
+        linkCards: holderLinkCards(holder, links, where),
+        media: holderMedia(holder, where),
+        videos: holderVideos(holder, where),
         longTextAttachments: attachments,
         reviewFlags: failures.length ? ["正文疑似遺漏"] : [],
         pasteFailures: failures
