@@ -139,3 +139,8 @@ Steps:
 7. Optional: select some text on a page, right-click > "Save selected text to Notion" to add it as a new page.
 
 The extension does nothing until the user triggers a save. Saving social posts (Threads, Plurk, X, Instagram, Facebook, LinkedIn) works the same way on a single-post page, but needs an account on those sites, so the steps above use a public web article.
+
+## 截圖與宣傳圖
+
+- 截圖：`store/screenshots/zh-TW` 與 `store/screenshots/en`，各 4 張，1280x800。介面有變動時執行 `npm run screenshots` 重拍；工具在 `scripts/store-screenshots/`，用真正的 popup 與設定頁配上示範資料拍攝，標語與示範內容也寫在那裡。
+- 小型宣傳圖：`store/promo`，不由上面的指令產生。

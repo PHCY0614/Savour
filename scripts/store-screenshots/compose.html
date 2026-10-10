@@ -1,0 +1,94 @@
+<!doctype html>
+<!--
+  One store screenshot, 1280x800: the headline on the left, the real popup or settings page on the right
+  in an iframe. index.js opens it as compose.html?lang=zh|en&scene=save|selection|update|setup.
+  The headlines and the demo article live here; the demo data inside the popup lives in mock.js.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/pages/tokens.css">
+<style>
+  html, body { margin: 0; width: 1280px; height: 800px; overflow: hidden; background: var(--bg); font-family: var(--font-sans); }
+  .copy { position: absolute; left: 84px; width: 560px; }
+  .copy.center { top: 50%; transform: translateY(-50%); }
+  .copy.top { top: 66px; }
+  .brand { font-family: var(--font-serif); font-weight: 700; font-size: 24px; color: var(--accent); margin: 0 0 28px; }
+  h1 { font-family: var(--font-serif); font-weight: 700; font-size: 52px; line-height: 1.22; color: var(--brand); margin: 0 0 30px; letter-spacing: 0.01em; }
+  .sub { font-size: 24px; line-height: 1.5; color: var(--ink-soft); margin: 0; }
+  .card { position: absolute; right: 84px; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: var(--bg);
+    box-shadow: 0 24px 60px rgba(60, 48, 34, 0.16), 0 4px 14px rgba(60, 48, 34, 0.08); }
+  iframe { border: 0; display: block; transform-origin: 0 0; }
+  .article { position: absolute; left: 84px; top: 430px; width: 460px; padding: 26px 30px 30px; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 18px; box-shadow: 0 18px 44px rgba(60, 48, 34, 0.12); color: var(--ink-soft); font-size: 17.5px; line-height: 1.7; }
+  .article h2 { font-family: var(--font-serif); font-size: 23px; color: var(--brand); margin: 0 0 12px; }
+  .article p { margin: 0 0 8px; }
+  .article p:last-child { margin: 0; }
+  mark { background: #b9d4f7; color: #1d2733; padding: 4px 0; }
+</style>
+</head>
+<body>
+<script>
+const q = new URLSearchParams(location.search);
+const lang = q.get("lang") === "en" ? "en" : "zh";
+const scene = q.get("scene") || "save";
+const COPY = {
+  zh: {
+    save: ["先存再說，<br>之後慢慢讀。", "點一下，把感興趣的內容存進自己的 Notion。"],
+    selection: ["只存一段，<br>也可以。", "反白文字存成新頁面，或加到已有的頁面。"],
+    update: ["原文變更，<br>更新就好。", "用最新內容換掉原文，你寫的筆記都留在原位。"],
+    setup: ["連線一次，<br>開始保存。", "文章與貼文直接從你的瀏覽器送到你自己的 Notion 資料庫。"],
+    article: ["酸種麵包的酵母到底怎麼養", "只需要麵粉和水就能開始，但第一週大多是在等待。", "健康的酵母在餵食後幾小時內就會長大一倍，帶著淡淡酸香，佈滿細小的氣泡。", "放在室溫下，每天餵食一次。"]
+  },
+  en: {
+    save: ["Save now.<br>Savour later.", "One click saves what interests you into your own Notion."],
+    selection: ["Just a passage?<br>Save only that.", "Highlight text to save it as a new page, or add it to a page you already have."],
+    update: ["Content changed?<br>Update it.", "Replace the saved original with the latest version. Your notes stay where you put them."],
+    setup: ["Connect once.<br>Keep it yours.", "Your articles and posts go straight from your browser to your own Notion database."],
+    article: ["How sourdough starters really work", "Flour and water are all it takes to begin, but the first week is mostly waiting.", "A healthy starter doubles within hours of a feeding, smells pleasantly sour, and is full of small bubbles.", "Keep it at room temperature and feed it once a day."]
+  }
+}[lang];
+document.documentElement.lang = lang === "en" ? "en" : "zh-Hant";
+const [headline, sub] = COPY[scene];
+document.body.insertAdjacentHTML("beforeend",
+  `<div class="copy ${scene === "selection" ? "top" : "center"}"><p class="brand">Savour</p><h1>${headline}</h1><p class="sub">${sub}</p></div>`);
+if (scene === "selection") {
+  const [title, a, b, c] = COPY.article;
+  document.body.insertAdjacentHTML("beforeend", `<div class="article"><h2>${title}</h2><p>${a}</p><p><mark>${b}</mark></p><p>${c}</p></div>`);
+}
+const card = document.createElement("div");
+card.className = "card";
+const frame = document.createElement("iframe");
+card.appendChild(frame);
+document.body.appendChild(card);
+const MAX_H = 760;
+function place(width, scale, contentHeight, minHeight) {
+  let height = Math.max(contentHeight * scale, minHeight);
+  if (height > MAX_H) { scale = MAX_H / contentHeight; height = MAX_H; }
+  frame.style.width = `${width}px`;
+  frame.style.height = `${height / scale}px`;
+  frame.style.transform = `scale(${scale})`;
+  card.style.width = `${width * scale}px`;
+  card.style.height = `${height}px`;
+  card.style.top = `${(800 - height) / 2}px`;
+}
+if (scene === "setup") {
+  frame.src = `/pages/options/options.html?lang=${lang}&scene=${scene}`;
+  place(780, 0.7, 720 / 0.7, 720);
+  frame.addEventListener("load", () => setTimeout(() => {
+    const doc = frame.contentDocument;
+    const section = doc.querySelectorAll(".form-card")[1];
+    doc.documentElement.style.scrollbarWidth = "none";
+    frame.contentWindow.scrollTo(0, section.getBoundingClientRect().top + frame.contentWindow.scrollY - 24);
+  }, 600));
+} else {
+  frame.src = `/pages/popup/popup.html?lang=${lang}&scene=${scene}`;
+  place(370, 1.22, 600, 732);
+  frame.addEventListener("load", () => setTimeout(() => {
+    const doc = frame.contentDocument;
+    place(370, 1.22, doc.querySelector(".popup-shell").getBoundingClientRect().height, 732);
+  }, scene === "selection" ? 1200 : 500));
+}
+</script>
+</body>
+</html>
