@@ -124,14 +124,19 @@ Privacy policy URL: https://github.com/PHCY0614/Savour/blob/main/PRIVACY.en.md
 
 ### Instructions for the reviewer
 
-Notion token: [token]. Test database (already shared with the integration): [URL].
+Notion token: provided in the password field of the account credential
+
+Blank parent page: [url]
+
+Two empty test databases have already been created.
+
 1. Right-click the icon > Options.
 2. Paste the token, press Save settings.
 3. Load available databases, select the test database, Use this database.
 4. Open any public article, press Save this page (or Alt+S).
 5. Check the test database in Notion for the new page.
 
-<!-- 後台限 500 字元，上面的 [token] 和 [URL] 只填在後台，不要提交到 repo。全文約 343 字元，填入真實值後約 466 字元。 -->
+<!-- 後台限 500 字元。Token 填在後台「測試帳號」的密碼欄，不寫在這段文字裡；[url] 換成測試用空白頁面的網址，只填在後台，不要提交到 repo。 -->
 
 
 ## 截圖與宣傳圖
