@@ -21,7 +21,7 @@ With one click, what you're viewing is saved into your own Notion database, with
 What you can save
 
 Web articles: headings, links, lists, tables and images stay in place
-Threads, Plurk, X, Instagram, Facebook and LinkedIn posts, and YouTube videos
+Social media posts, discussions, and video pages
 Just a highlighted passage, or add it to an existing page
 Save from the toolbar button, the right-click menu or Alt+S
 
@@ -41,7 +41,7 @@ Works only when you click save
 Content goes straight from your browser to your own Notion, with no server in between and no tracking
 Requires a Notion account; the settings page walks you through connecting it once
 
-Savour is an independent open-source tool, not affiliated with Notion, Threads, Plurk, X, Instagram, Facebook, LinkedIn, YouTube or their owners. All names and trademarks belong to their respective owners.
+Savour is an independent open-source tool, not affiliated with or endorsed by Notion or any supported third-party platforms. All trademarks belong to their respective owners.
 
 ## 正體中文
 
@@ -62,7 +62,7 @@ Savour is an independent open-source tool, not affiliated with Notion, Threads, 
 可以保存
 
 網頁文章：標題、連結、清單、表格、圖片都留在原位
-Threads、噗浪、X、Instagram、Facebook、LinkedIn 貼文與 YouTube 影片
+社群動態、討論串與影片頁面
 只保存反白的一段文字，或將它加到現有頁面
 按工具列按鈕、右鍵選單或 Alt+S 都能保存
 
@@ -82,7 +82,7 @@ Threads、噗浪、X、Instagram、Facebook、LinkedIn 貼文與 YouTube 影片
 內容由你的瀏覽器直接送到你自己的 Notion，沒有中間伺服器，也沒有追蹤
 需要 Notion 帳號；第一次使用時，設定頁有教學帶你完成連線
 
-Savour 是獨立的開源工具，與 Notion、Threads、噗浪、X、Instagram、Facebook、LinkedIn、YouTube 及其營運公司沒有關聯，各名稱與商標屬於其所有人。
+Savour 是獨立的開源工具，與 Notion 或任何支援之第三方平台沒有關聯，各名稱與商標屬於其所有人。
 
 ## Developer Dashboard 欄位（英文，貼到後台）
 
@@ -124,21 +124,15 @@ Privacy policy URL: https://github.com/PHCY0614/Savour/blob/main/PRIVACY.en.md
 
 ### Instructions for the reviewer
 
-Savour needs a Notion account and an Integration token to work. A dedicated test token and a test database are provided below (shared with the Integration, containing no personal data).
+Notion token: [token]. Test database (already shared with the integration): [URL].
+1. Right-click the icon > Options.
+2. Paste the token, press Save settings.
+3. Load available databases, select the test database, Use this database.
+4. Open any public article, press Save this page (or Alt+S).
+5. Check the test database in Notion for the new page.
 
-Test Notion Integration token: <!-- 只填在後台，不要提交到 repo -->
-Test database: <!-- 已加入 Integration 的資料庫網址，只填在後台 -->
+<!-- 後台限 500 字元，上面的 [token] 和 [URL] 只填在後台，不要提交到 repo。全文約 343 字元，填入真實值後約 466 字元。 -->
 
-Steps:
-1. Right-click the extension icon > Options (or open the extension's settings page).
-2. Under "Notion connection", paste the test token and press "Save settings" (optionally "Test Notion access" to confirm it works).
-3. Press "Load available databases", pick the test database from the list, then press "Use this database". Missing columns are added automatically.
-4. Open any public web article (for example a Wikipedia article).
-5. Press the extension's toolbar icon and press "Save this page", or press Alt+S.
-6. Open the test database in Notion: a new page with the article text, source URL and save date appears.
-7. Optional: select some text on a page, right-click > "Save selected text to Notion" to add it as a new page.
-
-The extension does nothing until the user triggers a save. Saving social posts (Threads, Plurk, X, Instagram, Facebook, LinkedIn) works the same way on a single-post page, but needs an account on those sites, so the steps above use a public web article.
 
 ## 截圖與宣傳圖
 
