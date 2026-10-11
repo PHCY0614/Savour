@@ -6,7 +6,7 @@
 
 **簡短說明 / Summary**
 
-Save now. Savour later. One click saves it to your own Notion, to digest when you have time.
+Save now. Savour later. Save web articles and social posts to your own Notion with one click, and read them when you have time.
 
 **完整說明 / Description**
 
