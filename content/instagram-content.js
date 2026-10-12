@@ -6,27 +6,16 @@
 
   const S = globalThis.SavourShared;
   const T = globalThis.SavourToast;
+  const SEL = globalThis.SavourSelectionCapture;
   const IC = globalThis.SavourInstagramCapture;
-  if (!S || !T || !IC) return;
+  if (!S || !T || !SEL || !IC) return;
   const capture = IC.createInstagramCapture({ shared: S });
 
   function captureSelection(/** @type {string} */ selectionText) {
-    const selection = window.getSelection();
-    // The page's own selection keeps line breaks; the context menu's selectionText flattens them.
-    const text = S.cleanText(selection?.toString() || selectionText || "");
-    if (!text) throw new Error(S.t("請先選取想保存的文字"));
-    const anchors = selection?.rangeCount ? [...selection.getRangeAt(0).cloneContents().querySelectorAll("a[href]")] : [];
-    return {
+    return SEL.buildSelectionCapture(selectionText, {
       platform: "instagram",
-      captureType: "selection",
-      text,
-      sourceUrl: S.normalizeThreadsUrl(location.href),
-      author: "",
-      publishedAt: "",
-      links: S.normalizeLinks(anchors.map(anchor => ({ text: anchor.textContent, url: anchor.href }))),
-      continuations: /** @type {any[]} */ ([]),
-      titleHint: document.title
-    };
+      sourceUrl: S.normalizeThreadsUrl(location.href)
+    });
   }
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

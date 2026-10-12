@@ -19,7 +19,7 @@
 
     // No site has a content script of its own in the manifest: every page gets its files injected when the
     // user saves from it, and the activeTab permission allows exactly that tab, at that moment.
-    const COMMON_SCRIPTS = ["i18n/en.js", "i18n/index.js", "lib/shared.js", "content/toast.js"];
+    const COMMON_SCRIPTS = ["i18n/en.js", "i18n/index.js", "lib/shared.js", "content/toast.js", "content/selection-capture.js"];
     const SITE_SCRIPTS = [
       {
         hosts: new Set(S.THREADS_HOSTS),
@@ -42,6 +42,7 @@
       "i18n/index.js",
       "lib/shared.js",
       "content/toast.js",
+      "content/selection-capture.js",
       "vendor/readability/Readability.js",
       "content/web-article.js",
       "content/x-capture.js",

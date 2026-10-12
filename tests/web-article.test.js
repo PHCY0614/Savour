@@ -210,6 +210,7 @@ test("注入的頁面程式會回應 PING、保存文章與選取文字，重複
   const globals = {
     SavourShared: S,
     SavourToast: require("../content/toast.js"),
+    SavourSelectionCapture: require("../content/selection-capture.js"),
     SavourWebArticle: require("../content/web-article.js"),
     SavourXCapture: require("../content/x-capture.js"),
     SavourYouTubeCapture: require("../content/youtube-capture.js"),

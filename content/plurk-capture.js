@@ -3,10 +3,13 @@
  * through a reader supplied by plurk-content.js.
  */
 (function initializeSavourPlurkCapture(root, factory) {
-  const api = factory();
+  const selectionCapture = typeof module === "object" && module.exports
+    ? require("./selection-capture.js")
+    : root.SavourSelectionCapture;
+  const api = factory(selectionCapture);
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.SavourPlurkCapture = api;
-})(globalThis, function createSavourPlurkCaptureModule() {
+})(globalThis, function createSavourPlurkCaptureModule(/** @type {typeof import("./selection-capture.js")} */ SEL) {
   "use strict";
 
   const CAPTURE_VALIDATION_VERSION = 2;
@@ -241,22 +244,12 @@
      * @param {string} selectionText the context menu's copy of the selection, used when the page has none
      */
     function captureSelection(selectionText) {
-      const selection = window.getSelection();
-      // The page's own selection keeps line breaks; the context menu's selectionText flattens them.
-      const text = S.cleanText(selection?.toString() || selectionText || "");
-      if (!text) throw new Error(S.t("請先選取想保存的文字"));
-      const anchors = selection?.rangeCount ? [...selection.getRangeAt(0).cloneContents().querySelectorAll("a[href]")] : [];
-      return {
+      return SEL.buildSelectionCapture(selectionText, {
         platform: "plurk",
-        captureType: "selection",
-        text,
         sourceUrl: S.normalizeThreadsUrl(location.href),
-        author: currentPlurkId() && permalinkRoot() ? authorOf(/** @type {Element} */ (permalinkRoot())) : "",
-        publishedAt: "",
-        links: S.normalizeLinks(anchors.map(anchor => ({ text: anchor.textContent, url: anchor.href }))),
-        continuations: /** @type {any[]} */ ([]),
-        titleHint: document.title
-      };
+        // Only a plurk's own page says whose plurk it is; the timeline and profiles do not.
+        author: currentPlurkId() && permalinkRoot() ? authorOf(/** @type {Element} */ (permalinkRoot())) : ""
+      });
     }
 
     return { captureCurrentPlurk, captureSelection, holderText, isAddressedReply };

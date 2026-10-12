@@ -4,10 +4,13 @@
  * capture for the worker to normalize (model/capture-model.js).
  */
 (function initializeSavourPageCapture(root, factory) {
-  const api = factory();
+  const selectionCapture = typeof module === "object" && module.exports
+    ? require("./selection-capture.js")
+    : root.SavourSelectionCapture;
+  const api = factory(selectionCapture);
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.SavourPageCapture = api;
-})(globalThis, function createSavourPageCaptureModule() {
+})(globalThis, function createSavourPageCaptureModule(/** @type {typeof import("./selection-capture.js")} */ SEL) {
   "use strict";
 
   /**
@@ -31,9 +34,6 @@
      * @param {string} selectionText the context menu's copy of the selection, used when the page has none
      */
     function captureSelection(selectionText) {
-      // The page's own selection keeps line breaks; the context menu's selectionText flattens them.
-      const selection = S.cleanText(window.getSelection()?.toString() || selectionText || "");
-      if (!selection) throw new Error(S.t("請先選取想保存的文字"));
       const container = findPostContainer(window.getSelection()?.anchorNode?.parentElement);
       let base = null;
       try {
@@ -42,30 +42,16 @@
         // Selection text remains safe to save even when the surrounding post card cannot be verified.
       }
       const current = S.parseThreadsUrl(location.href);
-      return {
-        captureType: "selection",
-        text: selection,
-        links: selectionLinks(),
+      // Threads captures carry no `platform`, unlike the other sites; the worker (model/capture-model.js)
+      // treats a capture without one as Threads, so adding it here would change how this is saved.
+      return SEL.buildSelectionCapture(selectionText, {
         sourceUrl: base?.sourceUrl || current.normalized,
         author: base?.author || current.handle,
-        publishedAt: base?.publishedAt || "",
-        continuations: /** @type {any[]} */ ([]),
-        titleHint: document.title
-      };
-    }
-
-    function selectionLinks() {
-      const selection = window.getSelection();
-      if (!selection?.rangeCount) return [];
-      const range = selection.getRangeAt(0);
-      const anchors = [...range.cloneContents().querySelectorAll("a[href]")];
-      const ancestor = range.commonAncestorContainer;
-      const wrapping = (ancestor instanceof Element ? ancestor : ancestor?.parentElement)?.closest("a[href]");
-      if (wrapping) anchors.push(wrapping);
-      return S.normalizeLinks(anchors.map(anchor => ({
-        text: anchor === wrapping ? selection.toString() : anchor.textContent,
-        url: anchor.href
-      })));
+        publishedAt: base?.publishedAt || ""
+      }, {
+        // Post text on Threads is often one long link; a selection inside it keeps that link.
+        wrappingLink: true
+      });
     }
 
     /**

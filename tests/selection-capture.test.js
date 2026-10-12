@@ -18,6 +18,7 @@ const S = require("../lib/shared.js");
 const GLOBALS = {
   SavourShared: S,
   SavourToast: { showToast() {} },
+  SavourSelectionCapture: require("../content/selection-capture.js"),
   SavourWebArticle: require("../content/web-article.js"),
   SavourXCapture: require("../content/x-capture.js"),
   SavourYouTubeCapture: require("../content/youtube-capture.js"),

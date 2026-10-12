@@ -11,12 +11,13 @@
   if (globalThis.__savourWebContentAlive?.()) return;
   const S = globalThis.SavourShared;
   const T = globalThis.SavourToast;
+  const SEL = globalThis.SavourSelectionCapture;
   const WA = globalThis.SavourWebArticle;
   const XC = globalThis.SavourXCapture;
   const YC = globalThis.SavourYouTubeCapture;
   const LC = globalThis.SavourLinkedInCapture;
   const FC = globalThis.SavourFacebookCapture;
-  if (!S || !T || !WA || !XC || !YC || !LC || !FC || typeof globalThis.Readability !== "function") return;
+  if (!S || !T || !SEL || !WA || !XC || !YC || !LC || !FC || typeof globalThis.Readability !== "function") return;
   globalThis.__savourWebContentAlive = () => {
     try {
       return Boolean(chrome.runtime?.id);
@@ -45,24 +46,14 @@
   }
 
   function captureSelection(/** @type {string} */ selectionText) {
-    const selection = window.getSelection();
-    // The page's own selection keeps line breaks; the context menu's selectionText flattens them.
-    const text = S.cleanText(selection?.toString() || selectionText || "");
-    if (!text) throw new Error(S.t("請先選取想保存的文字"));
-    const anchors = selection?.rangeCount ? [...selection.getRangeAt(0).cloneContents().querySelectorAll("a[href]")] : [];
     const sourceUrl = S.normalizeThreadsUrl(location.href);
     const parsed = S.parseThreadsUrl(sourceUrl);
-    return {
+    return SEL.buildSelectionCapture(selectionText, {
       platform: isX() ? "x" : "web",
-      captureType: "selection",
-      text,
       sourceUrl,
-      author: parsed.platform === "x" ? parsed.handle : "",
-      publishedAt: "",
-      links: S.normalizeLinks(anchors.map(anchor => ({ text: anchor.textContent, url: anchor.href }))),
-      continuations: /** @type {any[]} */ ([]),
-      titleHint: document.title
-    };
+      // Only an X address names the author; other pages have none to read here.
+      author: parsed.platform === "x" ? parsed.handle : ""
+    });
   }
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

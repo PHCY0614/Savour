@@ -18,6 +18,7 @@ const read = file => {
   if (file !== "content/threads-content.js") return source;
   const modules = [
     "content/toast.js",
+    "content/selection-capture.js",
     "content/dom-scope.js",
     "content/dom-extract.js",
     "content/legacy-discussion-dom.js",
@@ -166,6 +167,7 @@ test("content 模組載入順序與 DOM 模組 wiring 明確一致", () => {
     "i18n/index.js",
     "lib/shared.js",
     "content/toast.js",
+    "content/selection-capture.js",
     "content/dom-scope.js",
     "content/dom-extract.js",
     "content/legacy-discussion-dom.js",
@@ -563,6 +565,7 @@ test("一般網頁的擷取程式只在使用者保存時注入，且注入的�
     "i18n/index.js",
     "lib/shared.js",
     "content/toast.js",
+    "content/selection-capture.js",
     "vendor/readability/Readability.js",
     "content/web-article.js",
     "content/x-capture.js",

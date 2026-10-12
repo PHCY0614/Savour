@@ -9,6 +9,7 @@ declare var SavourI18n: typeof import("./i18n/index.js");
 declare var SavourI18nEnglish: typeof import("./i18n/en.js");
 declare var SavourShared: typeof import("./lib/shared.js");
 declare var SavourToast: typeof import("./content/toast.js");
+declare var SavourSelectionCapture: typeof import("./content/selection-capture.js");
 declare var SavourNotion: typeof import("./notion/index.js");
 declare var SavourNotionSchema: typeof import("./notion/schema.js");
 declare var SavourNotionPageBuilder: typeof import("./notion/page-builder.js");
