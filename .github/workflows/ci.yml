@@ -1,10 +1,10 @@
-# Runs the same checks as a local `npm run lint / typecheck / test / check` on every push to main and every PR,
+# Runs the same checks as a local `npm run lint / typecheck / test / check` on every push to main or refactor and every PR,
 # so a refactor that changes behaviour shows up before it is merged. It does not build or publish the package.
 name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, refactor]
   pull_request:
 
 permissions:
