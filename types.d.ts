@@ -249,6 +249,7 @@ export type BackgroundMessage =
   | { type: "CAPTURE_ACTIVE_SELECTION" }
   | { type: "GET_ACTIVE_PAGE_STATUS" }
   | { type: "RETRY_FAILED" }
+  | { type: "CANCEL_PENDING" }
   | { type: "CLEAR_RECENT" }
   | { type: "SYNC_NOTION_STATE" }
   | { type: "EXPORT_AUDIT" }

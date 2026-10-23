@@ -312,7 +312,11 @@
   "此貼文沒有可擷取的內容。": "This post has no content that could be captured.",
   "此則回覆沒有可擷取的內容。": "This reply has no content that could be captured.",
   "以下是更新前的內容，以及你在這頁寫的筆記。工具找不到這頁原文的位置（可能被移動或刪除過），所以沒有刪除任何東西；確認不需要後可以自己刪掉。": "Below is the content from before the update, and the notes you wrote on this page. The tool could not find where the original sits on this page (it may have been moved or deleted), so nothing was removed; delete it yourself once you no longer need it.",
-  "保存你感興趣、想收藏，等之後慢慢消化的文字。": "Things you find interesting and want to keep, saved to digest slowly later."
+  "保存你感興趣、想收藏，等之後慢慢消化的文字。": "Things you find interesting and want to keep, saved to digest slowly later.",
+  "保存途中被中斷，可能是圖片太多": "The save was interrupted, possibly by too many images",
+  "取消": "Cancel",
+  "再按一次「取消」，移除還沒寫入的項目；失敗的項目會保留": "Press Cancel again to remove items not yet saved; failed items stay",
+  "已取消 {n} 個等待中的項目；正在寫入的那篇可能仍會完成": "Cancelled {n} waiting items; the one being written may still finish"
   };
   if (typeof module === "object" && module.exports) module.exports = dictionary;
   else root.SavourI18nEnglish = dictionary;

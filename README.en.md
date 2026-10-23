@@ -96,7 +96,7 @@ These internal columns are hidden in database views during initial setup. To hid
 
 ## Saved records and synchronisation
 
-The extension shows recent save results and warnings about potentially incomplete content or images. You can manually retry failed items or export a list to check them.
+The extension shows recent save results and warnings about potentially incomplete content or images. You can manually retry failed items or export a list to check them, and cancel waiting items you no longer want saved.
 
 **Sync Notion**, below Recent, reads the database again and updates the local saved-content records. For example, after deleting an article in Notion, sync before saving it again.
 

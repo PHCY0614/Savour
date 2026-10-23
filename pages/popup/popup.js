@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "failed-count", "capture-thread", "save-selection", "append-selection", "update-panel", "update-page", "update-page-hint",
     "saved-page-link",
     "incomplete-section", "incomplete-count", "incomplete-list", "open-next-incomplete",
-    "message", "recent-list", "recent-empty", "sync-state", "sync-notion", "clear-recent", "export-audit", "open-archive", "retry-failed",
+    "message", "recent-list", "recent-empty", "sync-state", "sync-notion", "clear-recent", "export-audit", "open-archive", "retry-failed", "cancel-pending",
     "open-settings"
   ]) {
     elements[id] = document.getElementById(id);
@@ -51,6 +51,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   elements["update-page"].addEventListener("click", updatePage);
   elements["open-next-incomplete"].addEventListener("click", openNextIncomplete);
   elements["retry-failed"].addEventListener("click", retryFailed);
+  elements["cancel-pending"].addEventListener("click", cancelPending);
   elements["sync-notion"].addEventListener("click", syncNotionState);
   elements["clear-recent"].addEventListener("click", clearRecent);
   elements["export-audit"].addEventListener("click", exportAudit);
@@ -141,6 +142,7 @@ function renderStatus() {
   elements["failed-count"].parentElement.classList.toggle("has-failed", currentStatus.failed > 0);
   elements["open-archive"].disabled = !currentStatus.databaseUrl;
   elements["retry-failed"].hidden = !currentStatus.failed;
+  elements["cancel-pending"].hidden = !currentStatus.pending;
   elements["sync-notion"].disabled = !currentStatus.configured;
   elements["sync-notion"].textContent = t("同步 Notion");
   elements["clear-recent"].disabled = !currentStatus.recent?.length;
@@ -280,6 +282,22 @@ async function retryFailed() {
   await runBusy(async () => {
     const result = await sendBackground({ type: "RETRY_FAILED" });
     showMessage(t("已重新排入 {n} 個項目", { n: result.retried }));
+  });
+}
+
+let cancelConfirmPending = false;
+
+async function cancelPending() {
+  // The confirm prompt goes to the message line: a longer button label would cover the pending count.
+  cancelConfirmPending = !cancelConfirmPending;
+  elements["cancel-pending"].classList.toggle("is-confirming", cancelConfirmPending);
+  if (cancelConfirmPending) {
+    showMessage(t("再按一次「取消」，移除還沒寫入的項目；失敗的項目會保留"));
+    return;
+  }
+  await runBusy(async () => {
+    const result = await sendBackground({ type: "CANCEL_PENDING" });
+    showMessage(t("已取消 {n} 個等待中的項目；正在寫入的那篇可能仍會完成", { n: result.cancelled }));
   });
 }
 

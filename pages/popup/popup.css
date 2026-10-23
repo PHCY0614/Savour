@@ -136,10 +136,15 @@ h2 {
   color: var(--error);
 }
 
-.stat-failed .text-button {
+.stat-failed .text-button,
+.stat-pending .text-button {
   position: absolute;
   top: 6px;
   right: 8px;
+}
+
+.stat-pending .text-button.is-confirming {
+  color: var(--error);
 }
 
 .actions {

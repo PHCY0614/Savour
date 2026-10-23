@@ -209,6 +209,7 @@ async function defaultSetupCheck() {
 let setupCheck = defaultSetupCheck;
 
 const {
+  cancelPendingItems,
   enqueueCaptures,
   enqueueSelectionAppend,
   isProcessing,
@@ -554,6 +555,8 @@ async function handleMessage(message, sender) {
       return activePageStatus();
     case "RETRY_FAILED":
       return retryFailedItems();
+    case "CANCEL_PENDING":
+      return cancelPendingItems();
     case "CLEAR_RECENT":
       return clearRecentItems();
     case "SYNC_NOTION_STATE":
