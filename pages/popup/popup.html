@@ -25,7 +25,10 @@
 
       <section class="stats" aria-label="保存統計">
         <div><small>已保存</small><span id="saved-count">0</span></div>
-        <div><small>等待中</small><span id="pending-count">0</span></div>
+        <div class="stat-pending">
+          <small>等待中</small><span id="pending-count">0</span>
+          <button type="button" class="text-button" id="cancel-pending" hidden>取消</button>
+        </div>
         <div class="stat-failed">
           <small>失敗</small><span id="failed-count">0</span>
           <button type="button" class="text-button" id="retry-failed" hidden>重試</button>

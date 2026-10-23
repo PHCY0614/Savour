@@ -257,7 +257,7 @@ test("設定頁分開 Notion 連線與整理庫，且沒有捲動收集設定", 
 test("Manifest 只要求 Notion 與 Plurk Paste 的連線，圖片網站不需要權限", () => {
   const manifest = JSON.parse(read("manifest.json"));
   const packageJson = JSON.parse(read("package.json"));
-  assert.equal(manifest.version, "0.5.0");
+  assert.equal(manifest.version, "0.5.1");
   assert.equal(manifest.version, packageJson.version);
   assert.ok(manifest.host_permissions.includes("https://api.notion.com/*"));
   assert.equal(manifest.host_permissions.some(host => /cdninstagram|fbcdn|fbsbx|twimg|images\.plurk/.test(host)), false);

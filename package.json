@@ -1,6 +1,6 @@
 {
   "name": "savour-extension",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "description": "Savour: save what you find interesting and want to keep, to digest slowly later.",
   "scripts": {

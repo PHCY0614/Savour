@@ -451,3 +451,43 @@ test("瀏覽器模式會暴露 queue retry factory 與 alarm 名稱", () => {
   );
   assert.equal(typeof context.globalThis.SavourQueueRetry.createQueueRetry, "function");
 });
+
+test("保存途中一直被中斷的項目，第三次中斷後改為失敗，不會無限重來", async () => {
+  const harness = createHarness({ readToken: async () => "" });
+  harness.setState({
+    queue: [{ id: "big", capture: capture("big"), status: "processing", attempts: 0, lastError: "" }],
+    saved: {},
+    recent: [],
+    lastSyncedAt: ""
+  });
+  for (const expected of ["pending", "pending", "failed"]) {
+    await harness.queue.recoverInterruptedItems();
+    const [item] = harness.getState().queue;
+    assert.equal(item.status, expected);
+    assert.match(item.lastError, /被中斷/);
+    harness.setState({ ...harness.getState(), queue: [{ ...item, status: expected === "failed" ? "failed" : "processing" }] });
+  }
+  assert.equal(harness.getState().queue[0].attempts, 3);
+});
+
+test("取消只移除等待中與處理中的項目，失敗的留著可重試", async () => {
+  const harness = createHarness();
+  harness.setState({
+    queue: [
+      { id: "a", capture: capture("a"), status: "pending", attempts: 0, lastError: "" },
+      { id: "b", capture: capture("b"), status: "processing", attempts: 0, lastError: "" },
+      { id: "c", capture: capture("c"), status: "failed", attempts: 3, lastError: "x" }
+    ],
+    saved: {},
+    recent: [],
+    lastSyncedAt: ""
+  });
+  assert.deepEqual(await harness.queue.cancelPendingItems(), { cancelled: 2 });
+  assert.deepEqual(harness.getState().queue.map(item => item.id), ["c"]);
+});
+
+test("處理佇列期間定時呼叫擴充功能 API，讓 Chrome 不會中途停掉背景程式", () => {
+  const source = require("node:fs").readFileSync(require("node:path").join(__dirname, "../queue/retry.js"), "utf8");
+  assert.match(source, /setInterval\(\(\) => chromeApi\.runtime\?\.getPlatformInfo/);
+  assert.match(source, /clearInterval\(keepAlive\)/);
+});

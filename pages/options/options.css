@@ -52,9 +52,9 @@ h2 {
   font-size: 16px;
 }
 
-/* The one-line description under the title reads as a tagline, not as small print. */
+/* The one-line description under the title reads as a tagline, not as small print. No 680px cap like
+   the title: the English line is ~730px and would drop its last words to a second line. */
 .intro {
-  max-width: 680px;
   margin-bottom: 0;
   color: var(--ink-soft);
   font-size: clamp(16px, 2.4vw, 18px);

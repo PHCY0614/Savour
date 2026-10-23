@@ -297,6 +297,9 @@
       processing = true;
       let processed = 0;
       let schemaEnsured = false;
+      // Chrome stops an idle worker after 30 s, and network requests do not count as activity, so a save
+      // with many images was cut off and restarted forever. Any extension API call resets that timer.
+      const keepAlive = setInterval(() => chromeApi.runtime?.getPlatformInfo?.().catch(() => {}), 20000);
       try {
         const config = await readConfig();
         const token = await readToken();
@@ -410,6 +413,7 @@
           await shared.sleep(500);
         }
       } finally {
+        clearInterval(keepAlive);
         processing = false;
         // If the status read fails, skip rescheduling; the next alarm or user action restarts the queue.
         const status = await getStatus().catch(() => /** @type {any} */ (null));
@@ -443,6 +447,20 @@
     }
 
     /**
+     * Removes every waiting item from the queue. A save already running finishes; nothing on Notion changes.
+     * @returns {Promise<{ cancelled: number }>}
+     */
+    async function cancelPendingItems() {
+      return withStateLock(async () => {
+        const state = await readState();
+        const before = state.queue.length;
+        state.queue = state.queue.filter((item) => item.status !== "pending" && item.status !== "processing");
+        await writeState(state);
+        return { cancelled: before - state.queue.length };
+      });
+    }
+
+    /**
      * On worker start: items left "processing" by a stopped worker go back to pending, and items whose capture fails its integrity check are marked failed.
      * @returns {Promise<void>}
      */
@@ -458,8 +476,12 @@
             changed = true;
             continue;
           }
+          // An interrupted save counts as an attempt, so one that is always cut off ends as failed
+          // instead of restarting forever.
           if (item.status === "processing") {
-            item.status = "pending";
+            item.attempts = (item.attempts ?? 0) + 1;
+            item.lastError = t("保存途中被中斷，可能是圖片太多");
+            item.status = item.attempts >= 3 ? "failed" : "pending";
             changed = true;
           }
         }
@@ -468,6 +490,7 @@
     }
 
     return {
+      cancelPendingItems,
       enqueueCaptures,
       enqueueSelectionAppend,
       isProcessing,
